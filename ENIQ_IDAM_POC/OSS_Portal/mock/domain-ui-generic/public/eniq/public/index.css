@@ -1,0 +1,15 @@
+body {
+  background-color: var(--layer2, #FAFAFA);
+  color: var(--text, #242424);
+}
+
+eui-container eui-icon {
+  --icon-color: var(--white, #FFFFFF);
+  --icon-size: 21px;
+}
+
+eui-system-bar-actions{
+  --layer0: var(--layer1, #181818);
+  display: flex;
+  align-items: baseline;
+}

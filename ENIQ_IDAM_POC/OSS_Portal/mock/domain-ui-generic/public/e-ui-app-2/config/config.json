@@ -1,0 +1,14 @@
+{
+  "apps": [
+    {
+      "name": "charts",
+      "descriptionShort": "ch",
+      "module": "charts",
+      "displayName": "Charts",
+      "type": "euisdk",
+      "route": "charts",
+      "version": "0.0.1",
+      "groupNames": ["mockapps","eniq"]
+    }
+  ]
+}

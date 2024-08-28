@@ -1,0 +1,14 @@
+{
+  "apps": [
+  ],
+  "groups": [
+    {
+      "displayName": "Admin UI",
+      "version": "1.0.0",
+      "name": "eea:adminui",
+      "type": "product",
+      "descriptionLong": "Admin UI, for UI demo purposes only.",
+      "descriptionShort": "AUI"
+    }
+  ]
+}

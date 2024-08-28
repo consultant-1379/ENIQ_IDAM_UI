@@ -1,0 +1,82 @@
+{
+  "modules": [
+    {
+      "name": "e-custom-user-settings-panel",
+      "version": "1.0.0",
+      "path": "/src/panels/custom-user-settings-panel",
+      "main": "custom-user-settings-panel.js"
+    },
+    {
+      "name": "settings-plugin",
+      "version": "1.0.0",
+      "path": "/src/plugins/settings-plugin/src",
+      "main": "settings-plugin.js"
+    },
+    {
+      "name": "authentication",
+      "version": "1.0.0",
+      "path": "/src/plugins/authentication/src",
+      "main": "authentication.js"
+    },
+    {
+      "name": "launcher",
+      "version": "1.0.0",
+      "path": "/src/apps/launcher",
+      "main": "launcher.js"
+    },
+    {
+      "name": "error-app",
+      "version": "1.0.0",
+      "path": "/src/apps/error-app",
+      "main": "error-app.js"
+    },
+    {
+      "name": "@eui/theme",
+      "version": "1.0.1",
+      "path": "./libs/shared/@eui/theme",
+      "main": "index.js"
+    },
+    {
+      "name": "@eui/theme/icon",
+      "version": "1.0.1",
+      "path": "./libs/shared/@eui/theme",
+      "main": "index.js"
+    },
+    {
+      "name": "@eui/container",
+      "version": "1.0.4",
+      "path": "./libs/shared/@eui/container",
+      "main": "index.js"
+    },
+    {
+      "name": "@eui/component",
+      "version": "1.0.2",
+      "path": "./libs/shared/@eui/component",
+      "main": "index.js"
+    },
+    {
+      "name": "e-launcher-systembar-component",
+      "version": "1.0.0",
+      "path": "/src/components/launcher-systembar-component",
+      "main": "launcher-systembar-component.js"
+    },
+    {
+      "name": "e-systembar-user-info",
+      "version": "1.0.0",
+      "path": "/src/components/systembar-user-info",
+      "main": "systembar-user-info.js"
+    },
+    {
+      "name": "wrapper-app",
+      "version": "1.0.0",
+      "path": "/src/apps/wrapper-app",
+      "main": "wrapper-app.js"
+    },
+    {
+      "name": "@adp/ui-components",
+      "version": "0.1.7",
+      "path": "/libs/shared/@adp/ui-components/dist/",
+      "main": "index.js"
+    }
+  ]
+}

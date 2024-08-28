@@ -1,0 +1,69 @@
+pipeline {
+  agent {
+    node('presentation')
+  }
+  options {
+    ansiColor('xterm')
+    timeout(time: 1, unit: 'HOURS')
+    buildDiscarder(logRotator(numToKeepStr: '30', artifactNumToKeepStr: '30'))
+  }
+  stages {
+    stage('Prepare') {
+      steps {
+        sh 'bob --dryrun $(bob -lq)'
+      }
+    }
+    stage('Clean') {
+      steps {
+        sh 'bob clean'
+      }
+    }
+    stage('Init') {
+      steps {
+        lock(resource: null, label: 'presentation-ci', quantity: 1, variable: 'system') {
+          withCredentials([usernamePassword(credentialsId: 'arm-functional-user', usernameVariable: 'HELM_USER', passwordVariable: 'API_TOKEN')]) {
+            ansiColor('xterm') {
+              sh 'bob init-ci-test'
+            }
+          }
+        }
+      }
+    }
+    stage('Test CI Chart') {
+      steps {
+        lock(resource: null, label: 'presentation-ci', quantity: 1, variable: 'system') {
+          withCredentials([
+            usernamePassword(credentialsId: 'arm-functional-user', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD'),
+            usernamePassword(credentialsId: 'arm-functional-user', usernameVariable: 'HELM_USER', passwordVariable: 'API_TOKEN'),
+            string(credentialsId: 'arm-adpgs-eceaart-api-token', variable: 'API_TOKEN_ADP'),
+            file(credentialsId: env.system, variable: 'KUBECONFIG')
+          ]) {
+            ansiColor('xterm') {
+              sh 'bob test-ci-chart'
+            }
+          }
+        }
+      }
+    }
+  }
+  post {
+    cleanup {
+      sh "docker ps -a -q --filter label=$BUILD_TAG | xargs --no-run-if-empty  docker stop"
+      sh "docker ps -a -q --filter label=$BUILD_TAG | xargs --no-run-if-empty  docker rm"
+    }
+    failure {
+      mail to: 'f98b007c.ericsson.onmicrosoft.com@emea.teams.ms',
+      subject: "Failed Pipeline: ${currentBuild.fullDisplayName}",
+      body: "Failure on ${env.BUILD_URL}"
+      withCredentials([string(credentialsId: 'JIRA_token_eceaproj', variable: 'JIRA_TOKEN')]) {
+        sh 'bob -r ci/rulesets/misc-job-rules.yaml create-cichart-jira-card'
+      }
+      archiveArtifacts 'jira_**'
+    }
+    success {
+      mail to: 'f98b007c.ericsson.onmicrosoft.com@emea.teams.ms',
+      subject: "Successful Pipeline: ${currentBuild.fullDisplayName}",
+      body: "Success on ${env.BUILD_URL}"
+    }
+  }
+}

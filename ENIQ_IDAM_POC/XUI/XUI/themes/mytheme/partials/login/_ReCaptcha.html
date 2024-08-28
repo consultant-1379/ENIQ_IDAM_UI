@@ -1,0 +1,55 @@
+<!--
+  Copyright 2019-2021 ForgeRock AS. All Rights Reserved
+
+  Use of this code requires a commercial software license with ForgeRock AS.
+  or with one of its affiliates. All use shall be exclusively subject
+  to such license between the licensee and ForgeRock AS.
+-->
+<script type="text/javascript">
+    function onloadCallback() {
+        var textarea = document.getElementById("g-recaptcha-response");
+        textarea.setAttribute("aria-hidden", "true");
+        textarea.setAttribute("aria-label", "do not use");
+        textarea.setAttribute("aria-readonly", "true");
+    }
+</script>
+<script src="{{apiUri}}?onload=onloadCallback"></script>
+<script>
+var loginButton_0 = document.getElementById("loginButton_0"),
+    callback_index = {{index}},
+    /*
+        If callback_index is zero and the "name" attribute on loginButton_0 is callback_1 we
+        know ReCaptcha is by itself on the page. In this case we will hide loginButton_0
+        and click it to submit the form automatically when ReCaptcha is complete.
+    */
+    standaloneMode = callback_index === 0 && loginButton_0 && loginButton_0.name === "callback_1";
+
+if (standaloneMode) {
+    loginButton_0.style.display = "none";
+}
+
+function handleCaptchaCallback(response) {
+   document.getElementById("{{id}}").value = response;
+
+   if (standaloneMode) {
+       loginButton_0.click();
+   }
+}
+</script>
+
+<style>
+.captcha>div {
+    margin: auto;
+}
+.captcha>div>div {
+   display: inline-block;
+}
+</style>
+
+<div class="{{divClass}} captcha"
+     data-sitekey="{{siteKey}}"
+     data-callback="handleCaptchaCallback"></div>
+
+<input type="hidden"
+    id="{{id}}"
+    name="callback_{{index}}"/>

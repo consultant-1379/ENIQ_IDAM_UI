@@ -1,0 +1,15 @@
+{
+  "apps": [
+
+  ],
+  "groups": [
+    {
+      "displayName": "ENIQ",
+      "version": "1.0.0",
+      "name": "eniq",
+      "type": "product",
+      "descriptionLong": "ENIQ, for UI demo purposes only.",
+      "descriptionShort": "ENQ"
+    }
+  ]
+}

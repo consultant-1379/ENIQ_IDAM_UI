@@ -1,0 +1,35 @@
+<!--
+  Copyright 2015-2021 ForgeRock AS. All Rights Reserved
+ 
+  Use of this code requires a commercial software license with ForgeRock AS.
+  or with one of its affiliates. All use shall be exclusively subject
+  to such license between the licensee and ForgeRock AS.
+-->
+<ul class="list-group">
+{{#each allConsentMappingOutputs}}
+    <li class="list-group-item text-left">
+        <img
+          class="consent-app-image pull-left"
+          alt=""
+          src="{{ icon }}"
+          height="24"
+          width="24" />
+        <p class='h5'>{{ displayName }}</p>
+    <li class="list-group-item text-left {{#unless isLast}}hidden{{/unless}}">
+        <label>
+            <input
+                data-consentCollector
+                {{#unless isLast}}hidden{{/unless}}
+                type="checkbox"
+                name="callback_{{index}}""
+                id="{{id}}" />
+            {{ consentMessage }}
+        </label>
+    </li>
+  {{/each}}
+  <style>
+    .consent-app-image {
+      margin: 5px 10px 5px 0;
+    }
+  </style>
+</ul>

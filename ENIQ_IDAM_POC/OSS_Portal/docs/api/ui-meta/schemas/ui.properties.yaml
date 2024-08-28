@@ -1,0 +1,7 @@
+type: object
+properties:
+  properties:
+    description: List of associated properties.
+    type: array
+    items:
+      $ref: "ui.property.yaml"

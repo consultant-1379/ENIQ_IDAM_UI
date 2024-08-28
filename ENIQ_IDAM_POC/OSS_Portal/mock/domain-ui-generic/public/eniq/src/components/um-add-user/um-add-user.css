@@ -1,0 +1,74 @@
+/* style goes here */
+:host{
+  display: block;
+}
+.show{display: inline-block!important;}
+.container{
+  padding: 1.6em 1em;
+}
+.container .content-block{
+  display: flex;
+  /* gap: 14px; */
+}
+ .content-block .column-1,
+ .content-block .column-2{
+  flex-basis: 50%;
+}
+.content-block .column-1 .form-fields{
+  display: flex;
+  /* align-items: center; */
+  gap: 1em;
+  margin-bottom: var(--space-large,16px);
+}
+.content-block .column-1 .form-fields label{
+  flex-basis: 140px;
+}
+.container .content-block .column-1 .title{
+  font-size: 16px;
+  border-bottom: 1px solid #c8c8c8;
+  padding-bottom: 0.2em;
+  margin-bottom: var(--space-large);
+  max-width: 95%;
+}
+/* credentials */
+.form-fields label.required::after{
+  content:" *";
+    color: red;
+} 
+/* password  policies*/
+.policies{
+  border-left: 1px solid #c8c8c8;
+    margin-top: 3em;
+    padding-left: 2em;
+}
+.policies #policies-list{
+  list-style: none;
+  padding: 0px;
+}
+#policies-list eui-icon{
+  display: none;
+}
+.policies .access-control{
+  margin-top: 2.6em;
+}
+/* buttons section */
+section.buttons{
+  margin-top: 1em;
+}
+.buttons .content-block .column-1 .form-fields{
+  justify-content: right;
+  padding-right: 1em;
+}
+
+/* media quries */
+@media only screen and (max-width: 768px) {
+  .container .content-block{
+    flex-direction: column;
+   margin-bottom: 1em;
+  }
+   .content-block .column-1,
+   .content-block .column-2{
+      flex-basis: 100%;
+   }
+   .policies{border: none;}
+}

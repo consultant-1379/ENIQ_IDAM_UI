@@ -1,0 +1,219 @@
+load('./tilt-lib/config.star', 'get_settings')
+settings = get_settings()
+arm_url = settings.get('arm_url')
+arm_repo = settings.get('arm_repo')
+pull_secret = settings.get('pull_secret')
+namespace = 'default'
+gas_port = str(settings.get('forwardingPort'))
+debug_port = str(settings.get('debugPort'))
+image_base_os_version = '5.6.0-11'
+mainChart_deps = []
+
+if settings.get('devMode'):
+  devMode = 'true'
+else:
+  devMode = 'false'
+# this variable is used both in GAS and CI block
+ingressHost = settings.get('ingressHost', 'localhost')
+loadBalancerIp = settings.get('ingressIP', '')
+# overwriting it using actual IP in case of Contour
+if settings.get('deployCiChart') and settings.get('deployIccr'):
+  # after .txt is updated by "tilt-iccr-ip-fetcher", Tiltfile is retriggered and ingressHost is recalculated
+  loadBalancerIp = read_file('tilt.iccr.ip.txt', default = '')
+  loadBalancerIp = str(loadBalancerIp)
+
+if loadBalancerIp:
+  ingressHost = ''.join([str(settings.get('dockerUser')),'.gas.', loadBalancerIp, '.nip.io'])
+  protocol = 'http'
+  if (settings.get('ingressEnableTLS')):
+    protocol = 'https'
+  gasUrl=''.join([protocol, '://', ingressHost, '/ui/?#launcher'])
+  if (settings.get('deployMainService') and (settings.get('ingressEnabled') or settings.get('serviceMeshEnabled'))):
+    print('\nGAS UI address: ' + gasUrl + '\n')
+
+# Handle remote mode
+load('./tilt-lib/init-namespace.star', 'init_namespace', 'docker_login', 'generate_namespace_name')
+if settings.get('mode') == 'remote':
+  allow_k8s_contexts(settings.get('kubecontext'))
+  namespace = generate_namespace_name()
+  init_namespace(namespace)
+  #local('kubectl config set-context --current --namespace=' + namespace)
+  docker_login()
+
+if settings.get('deployMainService'):
+  # ---------- GUI Aggregator Service -------------
+  docker_build(
+    arm_url + '/' + arm_repo + '/uiservice', # image name
+    '.', # base path for docker build
+    dockerfile='./docker/Dockerfile',
+    entrypoint='./entrypoint.sh -d',
+    ignore=['mock'],
+    build_args={'DEV': devMode, 'BASE_OS_VERSION': image_base_os_version},
+    live_update=[
+      fall_back_on(['backend/package.json']),
+      sync('backend', '/runtime/server'),
+      #run('cd /runtime/server && npm install', trigger=['backend/package.json']), # does not work due to user right issues - TODO fix
+    ]
+  )
+
+  # in case of Contour, only deploy GAS after tilt-iccr-ip-fetcher is ready
+  if settings.get('deployCiChart') and settings.get('deployIccr') and settings.get('ingressEnabled') and settings.get('ingressUseContour'):
+    mainChart_deps.append('tilt-iccr-ip-fetcher')
+
+  set_params = [ # Values to set from the command-line
+    'imageCredentials.main.registry.url=' + arm_url,
+    'imageCredentials.pullSecret=' + pull_secret,
+    'imageCredentials.main.repoPath=' + arm_repo,
+    'imageCredentials.main.name=uiservice',
+    'ingress.enabled='+str(settings.get('ingressEnabled')),
+    'ingress.path='+settings.get('ingressPath', '/uiservice_' + settings.get('dockerUser', 'test')),
+    'ingress.hostname='+ingressHost,
+    'ingress.tls.enabled='+str(settings.get('ingressEnableTLS')),
+    'ingress.useContour='+str(settings.get('ingressUseContour')),
+    'ingress.ingressClass='+settings.get('ingressClass'),
+    'ingress.adpIccrServiceName='+str(settings.get('adpIccrServiceName')),
+    'global.security.tls.enabled='+str(settings.get('mTLS')),
+    'service.endpoints.http.tls.verifyClientCertificate='+settings.get('verifyClientCertificate', 'optional'),
+    'log.streamingMethod='+settings.get('logStreamingMethod'),
+    'configuration.cnom.defaultDashboards.enabled='+str(settings.get('deployCNOM')),
+    'configuration.faultIndications.enabled='+str(settings.get('faultIndicationsEnabled')),
+    'configuration.logging.defaultLogLevel='+settings.get('logLevel', 'info'),
+    'configuration.helpAggregator.enabled='+str(settings.get('helpAggregatorEnabled')),
+    'metrics.enabled='+str(settings.get('deployPm')),
+    'replicaCount='+str(settings.get('replicaCount', 1)) # live reload only works with single pod
+  ]
+
+  # reusing Ingress host when setting up APO FQDN's
+  if settings.get('authzProxy'):
+    authFqdn = ''.join(['authn.iam.', ingressHost])
+    keycloakFqdn = ''.join(['iam.', ingressHost])
+    set_params.append('authorizationProxy.enabled='+str(settings.get('authzProxy')))
+    set_params.append('authorizationProxy.authnProxyFQDN='+authFqdn)
+    set_params.append('authorizationProxy.keycloakFQDN='+keycloakFqdn)
+    set_params.append('authorizationProxy.adpIccrServiceName='+str(settings.get('adpIccrServiceName')))
+
+  if settings.get('deployMockServices'):
+    set_params.append('manualconfig.services[0].name=demo-ui-service-eea')
+    set_params.append('manualconfig.services[0].version=1.0')
+    if settings.get('mTLS'):
+      set_params.append('manualconfig.services[0].URL=https://demo-ui-service-eea-http:4000/ui-manual')
+    else:
+      set_params.append('manualconfig.services[0].URL=http://demo-ui-service-eea-http:4000/ui-manual')
+
+  uiservice_yaml = helm(
+    'charts/eric-adp-gui-aggregator-service/',
+    name='gui-aggregator-service', # The release name, equivalent to helm --name
+    namespace=namespace, # The namespace to install in, equivalent to helm --namespace
+    set=set_params
+  )
+  # live reload needs write access to the root fs
+  uiservice_yaml = blob(str(uiservice_yaml).replace('readOnlyRootFilesystem: true','readOnlyRootFilesystem: false'))
+  k8s_yaml(uiservice_yaml)
+
+# Load statement can not be moved to if statement, because Tilt does not allow that.
+load('./tilt-lib/generate-mock.star', 'generate_mock_service', 'build_mock_service_image')
+
+if settings.get('deployMockServices') or settings.get('deployEsmServices'):
+  build_mock_service_image()
+
+if settings.get('deployMockServices'):
+  # mock_id, port_offset, namespace, loadBalancerIp, public_path, context_root, (unsetLabels)
+  generate_mock_service('ecm', 10, namespace, loadBalancerIp, 'ui-generic-ecm', '/ui')
+  generate_mock_service('eea', 20, namespace, loadBalancerIp, 'ui-generic-eea', '/ui-manual', unsetLabels = True)
+  generate_mock_service('enm', 30, namespace, loadBalancerIp, 'ui-generic-enm', '/other-path')
+
+if settings.get('deployEsmServices'):
+  # mock_id, port_offset, namespace, loadBalancerIp, public_path
+  generate_mock_service('esma', 50, namespace, loadBalancerIp, 'esm-container')
+  generate_mock_service('esmb', 60, namespace, loadBalancerIp, 'esm-service-1')
+  generate_mock_service('esmc', 70, namespace, loadBalancerIp, 'esm-service-2')
+  generate_mock_service('eui1', 80, namespace, loadBalancerIp, 'e-ui-app-1')
+  generate_mock_service('eui2', 100, namespace, loadBalancerIp, 'e-ui-app-2')
+  generate_mock_service('3pp', 120, namespace, loadBalancerIp, 'third-party-app')
+
+if settings.get('deployCiChart'):
+  logNeeded = settings.get('deployLogTransformer')
+  fmNeeded = settings.get('deployFm')
+  iamNeeded = settings.get('deployIam')
+  pmNeeded = settings.get('deployPm') or fmNeeded or iamNeeded
+  iccrNeeded = settings.get('deployIccr')
+  meshNeeded = settings.get('deployServiceMesh')
+  cnomNeeded = settings.get('deployCNOM')
+
+  ci_params = [ # Values to set from the command-line
+      'global.pullSecret=' + pull_secret,
+      'global.security.tls.enabled='+str(settings.get('mTLS')),
+      'global.serviceMesh.enabled='+str(meshNeeded),
+      'eric-sec-sip-tls.enabled='+str(settings.get('mTLS')),
+      'eric-log-transformer.enabled='+str(logNeeded),
+      'eric-pm-server.enabled='+str(pmNeeded),
+      'eric-data-document-database-fault-handling.enabled='+str(fmNeeded),
+      'eric-fh-alarm-handler.enabled='+str(fmNeeded),
+      'eric-eea-ingress-ctrl-applications.enabled='+str(iccrNeeded),
+      'eric-mesh-controller.enabled='+str(meshNeeded),
+      'eric-mesh-gateways.enabled='+str(meshNeeded)
+  ]
+
+  if iamNeeded:
+    iamAuthFqdn = ''.join(['authn.iam.', ingressHost])
+    iamKeycloakFqdn = ''.join(['iam.', ingressHost])
+    ci_params.append('eric-sec-access-mgmt.enabled=true')
+    ci_params.append('eric-data-document-database-iam.enabled=true')
+    ci_params.append('eric-sec-access-mgmt.authenticationProxy.ingress.hostname='+iamAuthFqdn)
+    ci_params.append('eric-sec-access-mgmt.ingress.hostname='+iamKeycloakFqdn)
+
+  if cnomNeeded:
+    cnomFqdn = ''.join(['cnom.', ingressHost])
+    print('\nCNOM UI address: ' + cnomFqdn + '\n')
+    ci_params.append('eric-cnom-server.enabled=true')
+    ci_params.append('eric-cnom-server.ingress.hostname='+cnomFqdn)
+
+  ci_yaml = helm(
+    './charts/ci',
+    name='ci', # The release name, equivalent to helm --name
+    namespace=namespace, # The namespace to install in, equivalent to helm --namespace
+    set=ci_params
+  )
+  k8s_yaml(ci_yaml, allow_duplicates=True)
+
+  # in case there is Contour, wait for it and save its loadbalancer IP
+  if iccrNeeded:
+    cmd = 'kubectl -n ${NAMESPACE} get service -o=jsonpath=\'{.items[?(@.spec.type == "LoadBalancer")].status.loadBalancer.ingress[0].ip}\' \
+      > tilt.iccr.ip.txt && \
+      echo "ICCR address in ${NAMESPACE} namespace:" && cat tilt.iccr.ip.txt && echo "\\n"'
+    local_resource(
+      'tilt-iccr-ip-fetcher',
+      cmd,
+      resource_deps=['eric-eea-ingress-ctrl-applications-contour'],
+      env = {'NAMESPACE':namespace}
+    )
+
+  # Configuring resources dependencies to maintain the deploy order
+  if fmNeeded:
+    k8s_resource('eric-fh-alarm-handler',
+      port_forwards=[
+        '5006:5006',   # rest-api for alarms, https
+      ],
+      resource_deps=['eric-data-message-bus-kf'])
+    k8s_resource('eric-data-message-bus-kf', resource_deps=['eric-data-document-database-fault-handling','eric-data-coordinator-zk'])
+    k8s_resource('eric-data-document-database-fault-handling', resource_deps=['eric-sec-sip-tls-main', 'eric-sec-key-management-main', 'eric-data-distributed-coordinator-ed', 'eric-pm-server'])
+    k8s_resource('eric-data-coordinator-zk', resource_deps=['eric-sec-sip-tls-main', 'eric-sec-key-management-main', 'eric-data-distributed-coordinator-ed'])
+    k8s_resource('eric-pm-server', resource_deps=['eric-sec-sip-tls-main', 'eric-sec-key-management-main', 'eric-data-distributed-coordinator-ed'])
+
+  if settings.get('deployMainService'):
+    if fmNeeded:
+      mainChart_deps.append('eric-fh-alarm-handler');
+    k8s_resource('eric-adp-gui-aggregator-service', # deployment name in the k8s yaml
+      port_forwards=[
+        '{}:3000'.format(gas_port),   # ui-service
+        '{}:9229'.format(debug_port),   # debugger
+      ],
+      resource_deps=mainChart_deps
+    )
+else:
+    k8s_resource('eric-adp-gui-aggregator-service', # deployment name in the k8s yaml
+    port_forwards=[
+      '{}:3000'.format(gas_port),   # ui-service
+      '{}:9229'.format(debug_port),   # debugger
+    ]
+  )

@@ -1,0 +1,33 @@
+:host{
+  display: block;
+}
+e-eniq-launcher-app{
+  display: block;
+    margin: auto;
+}
+h1 {
+  padding: 1em;
+}
+.todo__button-bar {
+  display: flex;
+}
+
+.todo__text-field {
+  padding-left: var(--space-base, 8px);
+  padding-right: var(--space-base, 8px);
+}
+
+.fetch_data{
+ padding: var(--space-base,10px);  
+}
+.userlist{
+display: block;
+position: relative;
+}
+.d-none{
+display:none;
+}
+.admin-user{margin-top: 20px;
+    margin-left: 15px;
+    margin-right: 15px;
+}

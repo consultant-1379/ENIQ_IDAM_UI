@@ -1,0 +1,150 @@
+modelVersion: 2.0
+import:
+  common: ../../ruleset2.0.yaml
+  va-scan-functions: va-scan-functions.yaml
+
+properties:
+  - zap-config: ci/va/zap_config.yaml
+  - va-mitigation-config: ci/va/va-mitigation-config.yaml
+  - nmap-config: ci/va/nmap-config.yaml
+  - helm-chart-released-repo: https://arm.seli.gic.ericsson.se/artifactory/proj-eea-released-helm
+  - aggregated-vulns-path: ci/va/aggregated-vulnerabilities.jinja2
+  - jira-project-name: ADPRS
+  - cis-cat-report-prefix: cis-cat-report
+  - cis-cat-applicability-spec: ci/va/cis-cat-applicability-spec.json
+  - cis-cat-benchmark: "CIS_SUSE_Linux_Enterprise_15_Benchmark_v1.1.1-xccdf.xml 'Level 2 - Server'"
+
+env:
+  - KUBECONFIG (default=notset)
+  - HELM_VERSION (default=notset)
+  - ARM_API_USER (default=notset)
+  - ARM_API_TOKEN (default=notset)
+  - JIRA_API_TOKEN (default=notset)
+  - BUILD_TAG (default=proj-eea-app-local)
+
+var:
+  - last-released-version
+  - selected-version
+
+rules:
+  init:
+    - task: download-last-released-chart
+      docker-image: common.k8-test
+      cmd: helm pull ${common.helm-chart-name}
+        --repo ${helm-chart-released-repo}
+        --username ${env.ARM_API_USER}
+        --password ${env.ARM_API_TOKEN}
+        --destination .bob
+    - task: get-last-released-version
+      cmd: ls .bob | grep -oP '(\d?[\.+]){3}\d+' > .bob/var.last-released-version
+    - task: get-selected-version
+      cmd:
+        - echo ${var.last-released-version} | tr + - > .bob/var.selected-version
+        - if [[ "${env.HELM_VERSION}" != "notset" ]]; then echo ${env.HELM_VERSION} | tr + - > .bob/var.selected-version; fi
+    - task: set-k8s-namespace
+      cmd: bash -c 'echo ${env.BUILD_TAG} > .bob/var.k8s-namespace'
+
+  deploy-chart:
+    - rule: common.k8-cluster-prepare
+    - task: helm-default-drop-deploy
+      docker-image: common.k8-test
+      docker-flags:
+        - --network=host
+        - --env KUBECONFIG=${env.KUBECONFIG}
+        - --volume ${env.KUBECONFIG}:${env.KUBECONFIG}:ro
+      cmd:
+        helm install eric-adp-gui-aggregator-service ${common.helm-chart-name}
+        --wait
+        --repo ${common.helm-chart-repo-server}/${common.helm-chart-ci-repo-path}
+        --username ${env.ARM_API_USER}
+        --password ${env.ARM_API_TOKEN}
+        --version ${var.selected-version}
+        --set global.pullSecret=arm-pullsecret
+        --set log.streamingMethod=indirect
+        --set global.security.tls.enabled=false
+        --namespace=${var.common.k8s-namespace}
+
+  anchore-scan:
+    - rule: va-scan-functions.anchore-scan
+      properties:
+        - version: ${var.selected-version}
+        - helm-chart-name: ${common.helm-chart-name}
+        - image-name: ${common.docker-image-name}
+
+  fetch-xray-report:
+    - rule: va-scan-functions.xray-report
+      properties:
+        - version: ${var.selected-version}
+        - helm-chart-name: ${common.helm-chart-name}
+        - image-name: ${common.docker-image-name}
+
+  trivy-scan:
+    - rule: va-scan-functions.trivy-scan
+      properties:
+        - version: ${var.selected-version}
+        - helm-chart-name: ${common.helm-chart-name}
+        - image-name: ${common.docker-image-name}
+
+  cleanup:
+    - rule: va-scan-functions.cleanup
+    - task: delete-self-fetched-images
+      cmd:
+        - docker image rm -f ${common.image-internal-name}:${var.selected-version}
+
+  zap-scan:
+    - rule: va-scan-functions.zap-scan
+      properties:
+        - k8-namespace: ${var.common.k8s-namespace}
+        - zap-config-path: ${zap-config}
+
+  nmap-scan:
+    - rule: va-scan-functions.nmap-scan
+      properties:
+        - k8-namespace: ${var.common.k8s-namespace}
+        - nmap-config-path: ${nmap-config}
+
+  cis-cat-scan:
+    - rule: va-scan-functions.cis-cat-scan
+      properties:
+        - image-name: ${common.docker-image-name}
+        - cis-cat-benchmark: ${cis-cat-benchmark}
+        - cis-cat-report-prefix: ${cis-cat-report-prefix}
+        - cis-cat-applicability-spec: ${cis-cat-applicability-spec}
+
+  generate-upload-VA-report:
+    - rule: va-scan-functions.generate-upload-VA-report
+      properties:
+        - mitigation-config-path: ${va-mitigation-config}
+        - version: ${var.selected-version}
+        - helm-chart-name: ${common.helm-chart-name}
+
+  generate-aggregated-vuln-list:
+    - rule: va-scan-functions.generate-aggregated-vuln-list
+      properties:
+        - mitigation-config-path: ${va-mitigation-config}
+        - version: ${var.selected-version}
+        - helm-chart-name: ${common.helm-chart-name}
+        - aggregated-vulns-template: ${aggregated-vulns-path}
+
+  upload-reports-to-arm:
+    - rule: va-scan-functions.publish-reports-to-arm
+      properties:
+        - helm-chart-name: ${common.helm-chart-name}
+        - version: ${var.selected-version}
+
+  upload-va-report-to-eridoc:
+    - rule: va-scan-functions.publish-va-report-to-eridoc
+      properties:
+        - eridoc-config-path: ./docs/release/config/eridoc/release-security-documents.yaml
+        - version: ${var.selected-version}
+        - helm-chart-name: ${common.helm-chart-name}
+
+  manage-jira-cards:
+    - rule: va-scan-functions.manage-jira-cards
+      properties:
+        - jira-project-name: ${jira-project-name}
+        - jira-token: ${env.JIRA_API_TOKEN}
+        - jira-component-name: ${common.jira-component-name}
+        - helm-chart-name: ${common.helm-chart-name}
+        - version: ${var.selected-version}
+        - mitigation-config-path: ${va-mitigation-config}

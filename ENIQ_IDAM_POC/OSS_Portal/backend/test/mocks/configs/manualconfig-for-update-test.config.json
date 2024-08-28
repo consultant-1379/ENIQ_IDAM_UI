@@ -1,0 +1,19 @@
+{
+  "apps": [
+    {
+      "name": "domain-app-1",
+      "displayName": "This should be updated",
+      "version": "0.1.0",
+      "descriptionLong": "This should be updated",
+      "route": "/some/route"
+    }
+  ],
+  "groups": [
+    {
+      "name": "domain-group-1",
+      "displayName": "This should be updated",
+      "version": "0.1.0",
+      "descriptionLong": "This should be updated"
+    }
+  ]
+}

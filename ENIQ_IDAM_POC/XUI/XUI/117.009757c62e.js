@@ -1,0 +1,2 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[117],{642:function(e,n,o){"use strict";o.r(n);var t=o(86).a.extend({template:"common/UnauthorizedTemplate",baseTemplate:"common/LoginBaseTemplate",events:{"click #goBack":function(){window.history.go(-1)}}});n.default=new t}}]);
+//# sourceMappingURL=117.009757c62e.js.map

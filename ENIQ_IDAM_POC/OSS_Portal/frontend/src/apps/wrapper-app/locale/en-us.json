@@ -1,0 +1,7 @@
+{
+  "LAUNCHER": "Products and Applications",
+  "I_FRAME_TITLE": "3rd Party App",
+  "CONFIG_ERROR_TITLE": "Configuration Error",
+  "OPTIONS_MISSING": "The configured third party app is missing the 'options' parameter.",
+  "URL_MISSING": "The configured third party app is missing the 'url' parameter in the 'options'."
+}

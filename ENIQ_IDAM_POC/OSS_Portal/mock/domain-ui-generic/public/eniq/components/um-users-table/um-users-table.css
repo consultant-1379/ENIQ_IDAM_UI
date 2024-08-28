@@ -1,0 +1,76 @@
+/* style goes here */
+:host{
+  display: block;
+}
+.d-flex{
+  display: flex;
+}
+.show,.d-block{
+  display: block;
+}
+.hide{
+  display: none;
+}
+/*multi-panel  */
+#multi-panel-tile{
+  margin-top: 3px;
+}
+eui-multi-panel-tile1{
+  --gray-text: var(--gray-14, #242424);
+}
+.multi-panel .row-action-buttons{
+  margin-top: 7px;
+}
+/* table */
+eui-table th{    border-right: 1px solid;}
+eui-table::part(username_cell){
+  justify-content: space-between;
+}
+eui-table::part(menu){
+  padding-right: .5em;
+  --icon-color:var(--gray-05,#0c0c0c);
+  --icon-size:18px;
+}
+eui-table::part(status_cell){
+  gap: .2em;
+}
+eui-table:host([resizable]) th .table__cell-content
+{flex: none;}
+/* info panel */
+.user-details  .info_text{
+  margin-left: 0.5em;
+  margin-bottom: 1em;
+}
+.user-details .info_text .info-gray{
+    opacity: 60%;
+    margin-top: 0.4em;
+}
+/* Filter table */
+#filter-form .form-fields{
+  margin-bottom: 1em;
+}
+
+#filter-form label{
+  display: block;
+  margin-bottom: 0.4em;
+}
+#filter-form .apps_checkbox{
+  padding-top: 0.8em;
+  padding-bottom: 0.8em;
+  border: 2px solid #c8c8c8;
+}
+#filter-form eui-checkbox{
+  margin-bottom: 0.6em;
+}
+/* filter group */
+eui-tree::part(group_item){
+  opacity: 0.5;
+  pointer-events: none;
+}
+/* form buttons */
+#filter-form .form-buttons{
+  margin-top: 2.2em;
+}
+#filter-form .form-buttons .reset{
+  margin-right: .5em;
+}

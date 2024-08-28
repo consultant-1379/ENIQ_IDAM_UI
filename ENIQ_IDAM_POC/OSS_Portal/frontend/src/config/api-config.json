@@ -1,0 +1,25 @@
+{
+  "meta": {
+    "prefix": "/ui-meta/v1",
+    "routes": {
+      "apps": "/apps",
+      "groups": "/groups",
+      "components": "/components",
+      "services": "/services"
+    }
+  },
+  "logging": {
+    "prefix": "/ui-logging/v1",
+    "routes": {
+      "logs": "/logs"
+    }
+  },
+  "serve": {
+    "prefix": "/ui-serve/v1",
+    "routes": {
+      "static": "/static",
+      "importMap": "/import-map",
+      "packages": "/list-packages"
+    }
+  }
+}

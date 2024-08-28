@@ -1,0 +1,93 @@
+{
+  "k8sLabelPropertyName": "ui.ericsson.com/part-of",
+  "k8sLabelValue": "workspace-gui",
+  "k8sExternalUrlAnnotation": "ui.ericsson.com/external-baseurl",
+  "k8sQueryServiceEnabled": true,
+  "configQueryProtocolAnnotation": "ui.ericsson.com/protocol",
+  "configQueryPortAnnotation": "ui.ericsson.com/port",
+  "uiContentConfigContextAnnotation": "ui.ericsson.com/config-context",
+  "appNameLabel": "app.kubernetes.io/name",
+  "appVersionLabel": "app.kubernetes.io/version",
+  "logging": {
+    "enabled": true,
+    "defaultLogLevel": "info",
+    "serviceName": "eric-adp-gui-aggregator-service",
+    "stdout": {
+      "enabled": true
+    },
+    "filelog": {
+      "enabled": false
+    },
+    "syslog": {
+      "enabled": false,
+      "syslogHost": "eric-log-transformer",
+      "syslogFacility": "local0"
+    }
+  },
+  "faultIndications": {
+    "enabled": false
+  },
+  "ingressHost": "localhost",
+  "ingressPort": "80",
+  "ingressPath": "/",
+  "discoverIngress": false,
+  "useHttps": false,
+  "verifyClientCertificate": "optional",
+  "enforcedTLS": "required",
+  "serviceName": "eric-adp-gui-aggregator-service",
+  "headlessServiceName": "eric-adp-gui-aggregator-service-headless-svc",
+  "servicePort": 3000,
+  "dependencies": {
+    "logtransformer": {
+      "enabled": true,
+      "tls": {
+        "verifyServerCert": true,
+        "sendClientCert": true
+      }
+    },
+    "prometheus": {
+      "enabled": true,
+      "appName": "eric-adp-gas",
+      "endpointsToCountRequests": [
+        "/ui-meta/v1/apps",
+        "/ui-meta/v1/groups",
+        "/ui-meta/v1/components",
+        "/ui",
+        "/ui-serve/v1/import-map",
+        "/ui-serve/v1/list-packages",
+        "/ui-logging/v1/logs",
+        "/gas-internal",
+        "/ui-serve/v1/static"
+      ],
+      "tls": {
+        "verifyServerCert": false,
+        "sendClientCert": false
+      }
+    },
+    "faultHandler": {
+      "enabled": true,
+      "tls": {
+        "verifyServerCert": true,
+        "sendClientCert": true
+      },
+      "hostname": "eric-fh-alarm-handler",
+      "tlsPort": 6006,
+      "httpPort": 6005,
+      "serviceName": "eric-adp-gui-aggregator-service"
+    },
+    "internalUi": {
+      "enabled": true,
+      "tls": {
+        "verifyServerCert": true,
+        "sendClientCert": true
+      }
+    },
+    "httpClient": {
+      "enabled": true,
+      "tls": {
+        "verifyServerCert": true,
+        "sendClientCert": true
+      }
+    }
+  }
+}

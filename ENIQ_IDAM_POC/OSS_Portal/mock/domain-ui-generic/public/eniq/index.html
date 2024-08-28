@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+    <title>EniqProd</title>
+    <style>
+      eui-container:not(:defined) {
+        display: none;
+      }
+    </style>
+    <script type="module">
+      //import('@webcomponents/scoped-custom-element-registry');
+      import("./libs/pkg/es-module-shims.js");
+      // Import polyfill for firefox and safari
+      if (!window.URLPattern) {
+        import("./libs/pkg/urlpattern-polyfill.js");
+      }
+    </script>
+
+    <script type="importmap-shim">
+      {
+        "imports": {
+          "settings-panel.js": "./src/panels/settings-panel.js",
+          "@eui/container": "./libs/shared/@eui/container/index.js",
+          "@eui/theme": "./libs/shared/@eui/theme/index.js",
+          "@eui/navigation-menu": "./libs/@eui/navigation-menu/index.js",
+          "todo-app": "/src/apps/todo-app/todo-app.js",
+          "eniq-launcher-app":"/src/apps/eniq-launcher-app/eniq-launcher-app.js",
+          "user-management": "/src/apps/user-management/user-management.js",
+          "user-profile": "./src/components/user-profile/user-profile.js",
+          "useraccess-management": "./src/components/useraccess-management/useraccess-management.js",
+          "app-launcher": "./src/components/app-launcher/app-launcher.js",
+          "eniq-launcher": "./src/components/eniq-launcher/eniq-launcher.js",
+          "eniq": "./src/components/eniq/eniq.js",
+          "self-service-app": "/src/apps/self-service-app/self-service-app.js",
+          "eniq-launcher-app": "./src/apps/eniq-launcher-app/eniq-launcher-app.js",
+          "user-management-app": "/src/apps/user-management-app/user-management-app.js",
+          "um-add-user": "./src/components/um-add-user/um-add-user.js",
+          "um-userdetails-edit": "./src/components/um-userdetails-edit/um-userdetails-edit.js",
+          "um-edit-user": "./src/components/um-edit-user/um-edit-user.js",
+          "ss-change-password": "./src/components/ss-change-password/ss-change-password.js",
+          "ss-change-details": "./src/components/ss-change-details/ss-change-details.js",
+          "ss-setup-passwordless": "./src/components/ss-setup-passwordless/ss-setup-passwordless.js"
+        }
+      }
+    </script>
+    <script type="module-shim">
+      import '@eui/container';
+      import { Theme, Icon } from '@eui/theme';
+      import { NavigationMenu } from '@eui/navigation-menu';
+
+      import SystemProfile from './src/components/system-bar/profile.js';
+      import SystemAppLauncher from './src/components/system-bar/app-launcher.js';
+
+      Theme.register('eui-theme');
+      Icon.register('eui-icon');
+      SystemProfile.register();
+      SystemAppLauncher.register();
+      NavigationMenu.register('eui-navigation-menu');
+
+    </script>
+    <link rel="stylesheet" href="./index.css" />
+  </head>
+
+  <body>
+    <script>
+      const body = document.querySelector('body');
+      body.addEventListener('eui-theme-change', event => {
+        const theme = document.querySelector('eui-theme');
+        theme.theme = event.detail.theme;
+      });
+    </script>
+    <eui-theme theme="light" font-path="./assets/fonts/"></eui-theme>
+    <eui-container default-app="todo-app">
+      <eui-icon name="econ" slot="system-left"></eui-icon>
+      <span slot="system-left">Ericsson Portal</span>
+      <eui-navigation-menu slot="app-navigation"></eui-navigation-menu>
+      <eui-system-bar-actions>
+        <system-app-launcher></system-app-launcher>
+        <system-profile></system-profile>
+        
+      </eui-system-bar-actions>
+    </eui-container>
+    <script>
+      // load the config files into the Container...
+      const loadConfig = async () => {
+        // fetch config.json (public config file)...
+        const config = await fetch('./config.json').then(response =>
+          response.json(),
+        );
+        const euiContainer = document.querySelector('eui-container');
+        euiContainer.metaData = config;
+      };
+      loadConfig();
+    </script>
+  </body>
+</html>

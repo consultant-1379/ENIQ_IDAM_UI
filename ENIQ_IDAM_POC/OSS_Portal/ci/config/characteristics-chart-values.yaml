@@ -1,0 +1,26 @@
+global:
+  security:
+    tls:
+      enabled: false
+
+service:
+  type: NodePort
+  endpoints:
+    http:
+      tls:
+        enforced: optional
+        verifyClientCertificate: optional
+
+uiconfig:
+  hostname: localhost
+  useTls: false
+
+log:
+  streamingMethod: indirect
+
+configuration:
+  faultIndications:
+    enabled: false
+
+metrics:
+  enabled: false

@@ -1,0 +1,71 @@
+{
+  "modules": [
+
+    {
+      "name": "todo-app",
+      "version": "1.0.0",
+      "path": "./apps/todo-app",
+      "main": "todo-app.js"
+    },
+    {
+      "name": "user-management",
+      "version": "1.0.0",
+      "path": "./apps/user-management",
+      "main": "user-management.js"
+    },
+    {
+      "name": "self-service-app",
+      "version": "1.0.0",
+      "path": "./apps/self-service-app",
+      "main": "self-service-app.js"
+    },
+    {
+      "name": "user-management-app",
+      "version": "1.0.0",
+      "path": "./apps/user-management-app",
+      "main": "user-management-app.js"
+    },
+    {
+      "name": "eniq-launcher-app",
+      "version": "1.0.0",
+      "path": "./apps/eniq-launcher-app",
+      "main": "eniq-launcher-app.js"
+    },
+    {
+      "name": "um-add-user",
+      "version": "1.0.0",
+      "path": "./components/um-add-user",
+      "main": "um-add-user.js"
+    },
+    {
+      "name": "um-edit-user",
+      "version": "1.0.0",
+      "path": "./components/um-edit-user",
+      "main": "um-edit-user.js"
+    },
+    {
+      "name": "um-apps-groups",
+      "version": "1.0.0",
+      "path": "./components/um-apps-groups",
+      "main": "um-apps-groups.js"
+    },
+    {
+      "name": "ss-change-password",
+      "version": "1.0.0",
+      "path": "./components/ss-change-password",
+      "main": "ss-change-password.js"
+    },
+    {
+      "name": "ss-change-details",
+      "version": "1.0.0",
+      "path": "./components/ss-change-details",
+      "main": "ss-change-details.js"
+    },
+    {
+      "name": "ss-setup-passwordless",
+      "version": "1.0.0",
+      "path": "./components/ss-setup-passwordless",
+      "main": "ss-setup-passwordless.js"
+    }
+  ]
+}

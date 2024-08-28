@@ -1,0 +1,16 @@
+{
+  "@types/body-parser": "@types/body-parser, Definitely Typed",
+  "@types/express": "@types/express, Definitely Typed",
+  "@types/http-proxy": "@types/http-proxy, DefinitelyTyped",
+  "@types/minipass": "@types/minipass, Definitely Typed",
+  "@types/qs": "@types/qs, Definitely Typed",
+  "@types/underscore": "@types/underscore, Definitely Typed",
+  "follow-redirects": "Follow Redirects",
+  "psl": "psl (Public Suffix List)",
+  "supports-preserve-symlinks-flag": "node-supports-preserve-symlinks-flag",
+  "tar": "nod-tar",
+  "urlpattern-polyfill": "URLPattern polyfills",
+  "jose": "jose, panva",
+  "jsonschema": "jsonschema, tdegrunt",
+  "ws": "ws, websockets"
+}

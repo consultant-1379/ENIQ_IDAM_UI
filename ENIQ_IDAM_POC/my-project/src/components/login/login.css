@@ -1,0 +1,79 @@
+/* style goes here */
+:host{
+  display: block;
+}
+.hide{display:none;}
+.show{display:block;}
+.login{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+   margin-top: 4%;
+}
+.login .container{
+    border: 8px solid #eee;
+    width: 40%;
+    width: fit-content;
+    padding: 2em;
+}
+/*logo*/
+.logo eui-icon{
+ --icon-color: #031a59;
+ --icon-size: 26px;
+ margin-left: 1.5em;
+}
+.logo .logo_name{
+      font-size: 26px;
+    font-weight: bolder;
+    color: #031a59;
+    text-transform: uppercase;
+}
+
+/*Title*/
+.title{
+  margin-top: 2em;
+}
+.title .heading{
+    font-size: 3em;
+    text-transform: uppercase;
+    background: linear-gradient( to right, #91c027,#54b26f,#1783b6, #2d1b72);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/*login-form*/
+.login_form{
+ margin-top: 2em;
+}
+.login_form form{
+   display: flex;
+   gap:.5em;
+}
+.login_form form eui-text-field{
+  --input-border:transparent;
+  border: 2px solid #ebebeb;
+}
+.login_form form .submit eui-button{
+ /* --btn-line-height : 16px;*/
+ --btn-secondary-background:#e8e8e8;
+ --btn-secondary-border:#ebebeb;
+
+}
+.login_form form .submit eui-button:hover eui-icon{
+ --icon-color:#fff
+}
+.login_form form .submit eui-button eui-icon .eds-icon{
+     font-weight: 600;
+}
+.login_form .user_notfound{
+    margin-top: 1em;
+    color: red;
+}
+
+/*copy right*/
+.copy-right{
+ margin-top: 4em;
+}
+.copy-right p{
+ color: #c0c3c2;
+}

@@ -1,0 +1,172 @@
+/* style goes here */
+:host{
+  display: block;
+}
+/*page header */
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.padding-sides {
+    padding: 0 1em;
+}
+
+.page-header .home-icon eui-icon {
+    --icon-color: #878181;
+    --icon-size: 3em;
+    margin-right: 0.5em;
+}
+/*tabs block*/
+/*tabs */
+.tabsblock eui-tabs eui-tab{
+    font-size: 18px;
+    margin-right: 10px;
+    border: 1px solid;
+    border-bottom: none;
+    height: 33px;
+}
+.tabsblock eui-tabs eui-tab[selected] {
+    background-color: #1174e6;
+    color: #fff;
+}
+.tabsblock eui-tabs eui-tab.first {
+    margin-left: 0.9em;
+}
+.tabsblock eui-tabs eui-tab:focus{
+   outline: 1px solid transparent;
+}
+/*tabs content*/
+.tabsblock eui-tabs>div[selected] {
+    margin-top: -5px;
+    border-top: 1px solid;
+}
+.tabsblock eui-tabs .tab-content {
+    margin-top: 2.5em;
+}
+/*user search*/
+.user-search{
+    border-bottom: 1px solid;
+    padding-bottom: 1.5em;
+    padding-left: 1em;
+}
+.user-search .search-title{
+    padding-bottom: 0.4em;
+    font-size: 1.1em;
+}
+/*search fields*/
+.show{display: block;}
+.hide{display: none;}
+.user-search .serch-field .search-list{
+ position: relative;
+}
+.user-search .serch-field .search-list eui-menu.userlist{
+    position: absolute;
+    width: 160px;
+}
+/*user details*/
+.user-details{
+
+}
+.grid{
+    display: grid;
+    grid-template-columns: 1fr  1fr 1fr 1fr;
+    grid-column-gap: 2em;
+   /* grid-template-columns: 30% 15% auto auto;*/
+    align-items: baseline;
+    padding: 0.2em 1em;
+}
+.grid .column-1 {
+    max-width: 320px;
+}
+.grid .password-guidelines.column-2 {
+    max-width: 200px;
+    align-self: center;
+}
+.user-details form>div{
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 1em;
+}
+.user-details form .form-submit{
+  margin-top: 2.5em;
+}
+.btn-radius-pill {
+    --btn-radius: 10px;
+}
+/*Multi-Select Menu for Application and Group Membership  mappings*/
+.user-details eui-menu.multi-select-menu,
+eui-menu.multi-select-menu{
+   max-width: 170px;
+   width: 100%;
+   position: relative;
+}
+.user-details eui-menu.multi-select-menu eui-menu-item[selected],
+eui-menu.multi-select-menu eui-menu-item[selected]{
+  color: #1174e6;
+}
+/*Group Membership  mappings*/
+.group-membership .group-block{
+  max-width: 170px;
+}
+.group-membership .list-title{
+   font-size: 16px;
+    border: 1px solid #878787;
+    padding: 0.2em;
+    border-bottom: none;
+    text-align: center;
+}
+
+.group-membership eui-menu{
+   margin-top: -1px;
+}
+
+/*useraccess-modify */
+.useraccess-modify .app-mapping eui-menu,
+.useraccess-modify .group-membership eui-menu{
+  margin: 1em 0;
+}
+
+/*user Delete*/
+.useraccess-modify,
+.user-delete{
+   padding: 0.2em 1em;
+}
+.useraccess-modify .title,
+.user-delete .title{
+font-size: 1.2em;
+}
+.useraccess-modify .user-list,
+.user-delete .user-list{
+    max-width: 150px;
+    text-align: center;
+    margin: 1em 0;
+  /*  overflow: auto;
+    height: 200px;*/
+    border: 1px solid;
+}
+.useraccess-modify .list-title,
+.user-delete .user-list .list-title{
+    font-size: 16px;
+    border-bottom: 1px solid;
+    padding: 0.2em;
+
+}
+.useraccess-modify .user-list eui-menu,
+.user-delete .user-list eui-menu{
+      position: relative;
+     display: block;
+     width: 100%;
+    --menu-border:transparent;
+}
+.useraccess-modify .user-list eui-menu eui-menu-item,
+.user-delete .user-list eui-menu eui-menu-item{
+    text-align: center;
+   text-transform: capitalize;
+   --space-base:4px;
+}
+.useraccess-modify .users .delete-button,
+.user-delete .delete-button{
+        margin-top: 4em;
+}

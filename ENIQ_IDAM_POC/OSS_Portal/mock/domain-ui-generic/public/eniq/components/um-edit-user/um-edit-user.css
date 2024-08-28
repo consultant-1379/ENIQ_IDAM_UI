@@ -1,0 +1,58 @@
+/* style goes here */
+:host{
+  display: block;
+}
+:host(.active ){
+    opacity: inherit;
+    pointer-events: inherit;
+  }
+.container{
+  padding: 1.6em 1em;
+}
+.container .content-block{
+  display: flex;
+  gap: 14px;
+}
+ .content-block .column-1,
+ .content-block .column-2{
+  flex-basis: 50%;
+}
+.content-block .column-1 .form-fields{
+  display: flex;
+  /* align-items: center; */
+  gap: 1em;
+  margin-bottom: var(--space-large,16px);
+}
+.content-block .column-1 .form-fields label{
+  flex-basis: 140px;
+}
+.container .content-block .column-1 .title{
+  font-size: 16px;
+  border-bottom: 1px solid #c8c8c8;
+  padding-bottom: 0.2em;
+  margin-bottom: var(--space-large);
+}
+
+/* buttons section */
+section.buttons{
+  margin-top: 1em;
+}
+.buttons .content-block .column-1 .form-fields{
+  justify-content: right;
+  padding-right: 1em;
+  gap: 1em;
+}
+
+/* media quries */
+@media only screen and (max-width: 768px) {
+  .container .content-block{
+     flex-direction: column;
+    margin-bottom: 1em;
+   }
+   .content-block .column-1,
+   .content-block .column-2{
+      flex-basis: 100%;
+      width: 100%;
+   }
+   .policies{border: none;}
+}

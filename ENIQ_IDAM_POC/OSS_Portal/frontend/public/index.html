@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Launcher</title>
+    <style>
+      eui-container:not(:defined) {
+        display: none;
+      }
+    </style>
+    <script type="module">
+      import('@webcomponents/scoped-custom-element-registry');
+
+      window.esmsInitOptions = {
+        shimMode: true,
+        fetch: (url, options) => fetch(url, options),
+      };
+
+      import('es-module-shims');
+      // Import polyfill for firefox and safari
+      if (!window.URLPattern) {
+        import('urlpattern-polyfill');
+      }
+    </script>
+    <script type="importmap-shim" src="../ui-serve/v1/import-map"></script>
+    <script type="module-shim">
+      import '@eui/container';
+      import { Theme, Icon } from '@eui/theme';
+      import { CustomMenuPanel } from './src/panels/custom-menu-panel/custom-menu-panel.js';
+
+      Theme.register('eui-theme');
+      Icon.register('eui-icon');
+      CustomMenuPanel.register();
+    </script>
+    <link rel="stylesheet" href="./index.css" />
+  </head>
+
+  <body>
+    <div id="loader">
+      <eui-icon name="dial" id="loaderIcon"></eui-icon>
+    </div>
+    <eui-theme theme="dark" font-path="./assets/fonts/"></eui-theme>
+    <eui-container default-app="launcher">
+      <eui-plugins></eui-plugins>
+      <eui-icon name="econ" slot="system-left"></eui-icon>
+      <span slot="system-left">Ericsson Portal</span>
+      <e-custom-menu-panel slot="app-navigation"></e-custom-menu-panel>
+      <eui-system-bar-actions></eui-system-bar-actions>
+    </eui-container>
+
+    <script type="module">
+      import { getConfig } from './scripts/containerConfigLoader.js';
+
+      // Theme change event handler
+      document.querySelector('body').addEventListener('eui-theme-change', (event) => {
+        document.querySelector('eui-theme').theme = event.detail.theme;
+      });
+
+      // Get config from GAS
+      getConfig().then((config) => {
+        document.querySelector('eui-container').metaData = config;
+        document.querySelector('eui-system-bar-actions').metaData = config;
+        document.querySelector('eui-plugins').pluginList = config.components.filter(
+          (component) => component.type === 'euisdk:plugin',
+        );
+      });
+      window.customElements.whenDefined('eui-container').then(() => {
+        const loader = document.body.querySelector('#loader');
+        if (loader) {
+          loader.remove();
+        }
+      });
+    </script>
+  </body>
+</html>

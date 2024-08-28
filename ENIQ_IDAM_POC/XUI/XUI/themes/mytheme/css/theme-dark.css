@@ -1,0 +1,101 @@
+/*
+ * Copyright 2015-2019 ForgeRock AS. All Rights Reserved
+ *
+ * Use of this code requires a commercial software license with ForgeRock AS.
+ * or with one of its affiliates. All use shall be exclusively subject
+ * to such license between the licensee and ForgeRock AS.
+ */
+body{
+    background-color: #0c0c0c;
+}
+.page-header, .page-header-min h3 {
+    border-bottom: 1px solid #2b2f31;
+   display: none;
+}
+
+.am-panel-card:hover:not(.am-panel-card-muted) {
+    border-color: #486B64;
+}
+
+.am-panel-card:hover:not(.am-panel-card-muted) .card-icon-circle {
+    background-color: #7CCABA;
+}
+
+.am-panel-card .bg-muted {
+    background-color: #263035;
+    color: #374e56;
+}
+
+.dropdown-header {
+    font-size: inherit;
+}
+
+.btn-toolbar.page-toolbar {
+    border-color: #444;
+}
+
+label {
+    font-weight: normal;
+}
+
+.navbar-inverse {
+    background-image: -webkit-linear-gradient(top, #373c3e 0%, #1f2223 100%);
+    background-image: -o-linear-gradient(top, #373c3e 0%, #1f2223 100%);
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#373c3e), to(#1f2223));
+    background-image: linear-gradient(to bottom, #373c3e 0%, #1f2223 100%);
+    background-repeat: repeat-x;
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff373c3e', endColorstr='#ff1f2223', GradientType=0);
+    filter: progid:DXImageTransform.Microsoft.gradient(enabled = false);
+}
+
+#loginContent > li > a {
+    margin: -3px 0 -4px;
+}
+
+/*custom style*/
+/*logo*/
+.main-logo-holder{
+    text-align: initial;
+    margin-left: 20%;
+}
+.main-logo-holder .main-logo{
+    max-width: 120px;
+    max-height: 128px;
+}
+/*page-header title*/
+#login-base .page-header{
+    display: none;
+}
+/*login form*/
+#login-base  form.login{
+    display: flex;
+    justify-content: center;
+}
+#login-base form.login .row{
+    max-width: 280px;
+}
+
+.login .remember-forgot .checkbox{
+    visibility: hidden;
+}
+#login-base form.login input{
+    font-size: 16px;
+   border: 1px solid #4e4e4e;
+    border-radius: 0px;
+   background-color: transparent;
+   color: #fff;
+}
+
+#login-base form.login input::placeholder{
+  color:#959595;
+}
+#login-base form.login input:focus{
+   border: 1px solid #0082f0;
+   
+}
+#login-base form.login input[type=submit]{    
+    background-color: #0082f0;
+    border-color: #0082f0;
+   text-transform: capitalize;
+}
+

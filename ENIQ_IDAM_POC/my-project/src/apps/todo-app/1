@@ -1,0 +1,67 @@
+/**
+ * TodoApp is defined as
+ * `<e-todo-app>`
+ *
+ * @extends {App}
+ */
+import { App, html, definition } from '@eui/app';
+import style from './todo-app.css';
+import { TextField, Button } from '@eui/base'
+import DateHeading from '../../components/date-heading/date-heading.js'
+
+
+export default class TodoApp extends App {
+  // Uncomment this block to add initialization code
+  // constructor() {
+  //   super();
+  //   // initialize
+  // }
+
+
+  static get components() {
+    return {
+      // register components here
+	 'eui-button': Button,
+	 'eui-text-field': TextField,
+	 'e-date-heading': DateHeading,
+    };
+  }
+
+  didConnect() {
+    this.bubble('app:title', { displayName: 'Todo' });
+    this.bubble('app:subtitle', { subtitle: 'Todosub' });
+  }
+  
+ // fetch(‘https://reqres.in/api/users/2’,
+ //   {method: “GET”, body: JSON.stringify(data)})
+ // .then(response => response.json())
+ // .then(json => console.log(json));
+
+
+  /**
+   * Render the <e-todo-app> app. This function is called each time a
+   * prop changes.
+   */
+  render() {
+	//    return html`<h1>Your app markup goes here</h1>`;
+        return html` <e-date-heading></e-date-heading> 
+	<div class='todo__button-bar'>
+	<eui-button
+          ?disabled="${this.buttonDisabled}"
+          @click="${() => this._addTodoItem()}"
+          primary>
+          Add
+        </eui-button>
+        <eui-text-field
+          class='todo__text-field'
+          placeholder='What do you want to do?'
+          fullwidth ></eui-text-field>
+      </div>`
+  }
+}
+
+definition('e-todo-app', {
+  style,
+})(TodoApp);
+
+TodoApp.register();

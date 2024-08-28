@@ -1,0 +1,11 @@
+type: object
+required:
+  - name
+  - value
+properties:
+  name:
+    description: Name of the property.
+    type: string
+  value:
+    description: Value of the property.
+    type: string

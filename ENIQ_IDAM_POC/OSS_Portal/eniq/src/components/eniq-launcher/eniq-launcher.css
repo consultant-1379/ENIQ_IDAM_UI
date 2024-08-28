@@ -1,0 +1,40 @@
+/* style goes here */
+:host{
+  display: block;
+}
+.d-flex{
+  display: flex;
+}
+.container{
+  padding:18px 16px;
+  border-bottom: 3px solid var(--layer1, #EBEBEB);
+}
+/* searchbar and filters buttons style */
+.searchbar_filters{
+  justify-content: space-between;
+}
+/* search style */
+.search_bar eui-text-field{
+  width: 35vw;
+  
+ }
+/* filters buttons */ 
+ .filters-buttons{
+   gap: 5px;
+ }
+/* all-apps */
+.all-apps .list{
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 13px auto;
+}
+ .all-apps .list .list-item{
+   width: 24%;
+   background-color: var(--layer1, #EBEBEB);
+   border: 2px solid var(--gray-46);
+   --space-xl:18px;
+   cursor: pointer;
+ }
+ .all-apps .list .list-item eui-icon[name=favorite-solid]{
+  --text:#dcaf00;
+ }

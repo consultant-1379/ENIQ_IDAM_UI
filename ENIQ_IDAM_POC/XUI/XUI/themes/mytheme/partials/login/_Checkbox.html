@@ -1,0 +1,27 @@
+<!--
+  Copyright 2020 ForgeRock AS. All Rights Reserved
+ 
+  Use of this code requires a commercial software license with ForgeRock AS.
+  or with one of its affiliates. All use shall be exclusively subject
+  to such license between the licensee and ForgeRock AS.
+-->
+<div class="{{#if errorMessages.length}}has-error{{/if}}">
+  <div class="checkbox">
+    <label for="{{id}}">
+      <input type="checkbox"
+        id="{{id}}"
+        name="callback_{{index}}"
+        checked="{{value}}"
+        data-validator="required"
+        required
+        data-validator-event="keyup"
+        placeholder="{{prompt}}"
+        {{#equals index 0}}autofocus{{/equals}} />
+      <span>{{prompt}}</span>
+    </label>
+  </div>
+  
+  {{#each errorMessages}}
+    <p class="help-block errormsg">{{this}}</p>
+  {{/each}}
+</div>

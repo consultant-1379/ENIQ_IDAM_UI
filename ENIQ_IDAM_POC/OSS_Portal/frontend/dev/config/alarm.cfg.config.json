@@ -1,0 +1,14 @@
+{
+  "apps": [
+  ],
+  "groups": [
+    {
+      "displayName": "AlarmCfg",
+      "version": "1.0.0",
+      "name": "eea:Alarm",
+      "type": "product",
+      "descriptionLong": "AlarmCfg, for UI demo purposes only.",
+      "descriptionShort": "ACG"
+    }
+  ]
+}

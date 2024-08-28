@@ -1,0 +1,16 @@
+{
+  "k8sQueryServiceEnabled": false,
+  "logging": {
+    "enabled": true,
+    "defaultLogLevel": "info",
+    "stdout": {
+      "enabled": true
+    },
+    "filelog": {
+      "enabled": false
+    },
+    "syslog": {
+      "enabled": false
+    }
+  }
+}

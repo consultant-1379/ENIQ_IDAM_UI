@@ -1,0 +1,24 @@
+{{- $global := fromJson (include "eric-adp-gui-aggregator-service.global" .) -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "eric-adp-gui-aggregator-service.name" . }}-ui-configmap
+  labels:
+    {{- include "eric-adp-gui-aggregator-service.labels" . | nindent 4 }}
+  annotations:
+    {{- include "eric-adp-gui-aggregator-service.annotations" . | nindent 4 }}
+data:
+  frontend-config.json: |
+    {
+      "rest": {
+        "hostname": "{{ .Values.uiconfig.hostname | default .Values.ingress.hostname }}",
+        "path": "{{ .Values.uiconfig.path | default (include "eric-adp-gui-aggregator-service.ingressPath" . ) }}",
+        "protocol": {{ .Values.uiconfig.useTls | default .Values.ingress.tls.enabled | ternary "https" "http" | quote }}
+      },
+      "logging": {
+          "logLevel":  "{{ .Values.uiconfig.logging.logLevel }}"
+      },
+      "logoutURL": {{ include "eric-adp-gui-aggregator-service.logoutURL" . | quote }},
+      "userAccountURL": {{ include "eric-adp-gui-aggregator-service.userAccountURL" . | quote }}
+    }
+

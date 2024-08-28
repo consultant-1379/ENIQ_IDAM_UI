@@ -1,0 +1,97 @@
+* style goes here */
+:host{
+  display: block;
+}
+
+.container{
+    padding: 1em 0;
+}
+.padding-sides{
+  padding: 0 1em;
+}
+.page-header{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.page-header .home-icon eui-icon{
+      --icon-color: #878181;
+      --icon-size: 3em;
+     margin-right: 0.5em;
+}
+.user-profile eui-tabs eui-tab{
+    font-size: 18px;
+    margin-right: 10px;
+    border: 1px solid;
+    border-bottom: none;
+    height:33px;
+}
+.user-profile eui-tabs eui-tab.first{
+  margin-left: 0.9em;
+}
+.user-profile eui-tabs eui-tab[selected]{
+   background-color: #1174e6;
+    color: #fff;
+}
+.user-profile eui-tabs eui-tab[selected]:focus{
+     outline: 1px solid transparent;
+}
+.user-profile eui-tabs>div[selected]{
+    margin-top: -5px;
+    border-top: 1px solid;
+} 
+.tab-content { 
+   margin-top: 2.5em;
+}
+form div{
+    margin-bottom: 1em;
+}
+form .form-submit{
+   margin-top: 2.5em;
+}
+.user-password,.grid {
+    display: grid;
+    grid-template-columns: auto auto auto auto;
+    grid-column-gap: 2em;
+    grid-template-columns: 30% 15% auto auto;
+}
+.grid .column-1{max-width: 320px;}
+.grid .column-2{max-width: 200px;}
+.user-password .user-password-form1{
+        max-width: 330px;
+}
+.user-password-form form div {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+.user-password-content .content1{
+    max-width: 200px;
+}
+.user-password-content .content h3,.grid .content h3{
+   font-size: 1.5rem;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+/*password-less setup*/
+.passwordless-setup .setup-button{
+    display: flex;
+    flex-flow: column;
+    gap: 2em;
+}
+.passwordless-setup .message eui-textarea{
+    box-sizing:border-box;
+    background: var(--input-background, #fff);
+    border: 1px solid var(--input-border, #878787);
+    padding: 5px 7px 4px;
+}
+.passwordless-setup .message eui-textarea:focus{
+    --purple:transparent;
+}
+.btn-radius-pill{
+  --btn-radius:10px;
+}
+.private-key .key-button{
+  margin: auto 0;
+  text-align: center;
+}

@@ -1,0 +1,21 @@
+{
+  "name": "e-ui-app-1",
+  "version": "0.0.1",
+  "description": "Checkboxes",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "start:ui": "snowpack dev",
+    "build:dev": "snowpack build",
+    "start:watch": "node_modules/.bin/nodemon server.js --watch ."
+  },
+  "devDependencies": {
+    "snowpack": "3.8.8"
+  },
+  "dependencies": {
+    "@eui/app": "^1.0.0",
+    "@eui/base": "^1.0.0",
+    "@eui/theme": "^1.0.0",
+    "nodemon": "^2.0.4"
+  }
+}

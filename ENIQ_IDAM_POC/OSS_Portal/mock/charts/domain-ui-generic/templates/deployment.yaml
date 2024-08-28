@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "domain-ui-generic.name" . }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      dui-generic: {{ include "domain-ui-generic.name" . }}
+  template:
+    metadata:
+      labels:
+        dui-generic: {{ include "domain-ui-generic.name" . }}
+      {{- if eq (include "domain-ui-generic.serviceMeshEnabled" .) "true" }}
+        sidecar.istio.io/inject: "true"
+      {{- else }}
+        sidecar.istio.io/inject: "false"
+      {{- end }}
+    spec:
+      containers:
+        - name: main
+          image: {{ template "domain-app.registryUrl" . }}/{{ .Values.imageCredentials.repoPath }}/{{ .Values.images.main.name }}:{{ .Values.images.main.tag }}
+          env:
+            - name: MOCK_ID
+              value: {{ include "domain-ui-generic.name" . }}
+            - name: TLS
+              value: "{{ .Values.global.security.tls.enabled }}"
+            - name: PUBLIC_PATH
+              value: {{ .Values.publicPath}}
+            - name: CONTEXT_ROOT
+              value: {{ .Values.contextRoot }}
+        {{- if .Values.resources }}
+          resources:
+            {{- toYaml .Values.resources.main | nindent 12 }}
+        {{- end }}
+        {{- if .Values.global.security.tls.enabled }}
+          volumeMounts:
+          - name: root-ca-volume
+            mountPath: /runtime/server/certificates/root
+            readOnly: true
+          - name: gas-ca-volume
+            mountPath: /runtime/server/certificates/ca
+          - name: internal-cert
+            mountPath: /runtime/server/certificates/servercert
+          {{- if or (and .Values.ingress.enabled .Values.ingress.useContour) .Values.ingress.adpIccrCaSecret }}
+          - name: ingress-ca-volume
+            mountPath: /runtime/server/certificates/ingress
+            readOnly: true
+          {{- end }}
+        {{- end }}
+      volumes:
+      {{- if .Values.global.security.tls.enabled }}
+        - name: root-ca-volume
+          secret:
+            secretName: {{ .Values.configuration.siptls.rootSecretName }}
+        - name: gas-ca-volume
+          secret:
+            secretName: eric-adp-gui-aggregator-service-internal-ui-client-ca
+        - name: internal-cert
+          secret:
+            secretName: {{ include "domain-ui-generic.name" . }}-server-cert
+        {{- if or (and .Values.ingress.enabled .Values.ingress.useContour) .Values.ingress.adpIccrCaSecret }}
+        - name: ingress-ca-volume
+          projected:
+            sources:
+            - secret:
+              {{- if .Values.ingress.adpIccrCaSecret }}
+                name: {{ .Values.ingress.adpIccrCaSecret }}
+              {{- else }}
+                name: {{ .Values.ingress.adpIccrServiceName }}-client-ca
+              {{- end }}
+        {{- end }}
+      {{- end }}
+      {{- if include "domain-app.pullSecrets" . }}
+      imagePullSecrets:
+        - name: {{ template "domain-app.pullSecrets" . }}
+      {{- end}}

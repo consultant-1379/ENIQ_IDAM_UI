@@ -1,0 +1,24 @@
+{
+  "imports": {
+    "@eui/app": "./@eui/app.js",
+    "@eui/base": "./@eui/base.js",
+    "@eui/base/button": "./@eui/base/button.js",
+    "@eui/base/dropdown": "./@eui/base/dropdown.js",
+    "@eui/base/link": "./@eui/base/link.js",
+    "@eui/base/menu": "./@eui/base/menu.js",
+    "@eui/base/switch": "./@eui/base/switch.js",
+    "@eui/base/text-area": "./@eui/base/text-area.js",
+    "@eui/base/text-field": "./@eui/base/text-field.js",
+    "@eui/base/tooltip": "./@eui/base/tooltip.js",
+    "@eui/component": "./@eui/component.js",
+    "@eui/layout": "./@eui/layout.js",
+    "@eui/layout/tab": "./@eui/layout/tab.js",
+    "@eui/layout/tabs": "./@eui/layout/tabs.js",
+    "@eui/layout/tile": "./@eui/layout/tile.js",
+    "@eui/lit-component": "./@eui/lit-component.js",
+    "@eui/table": "./@eui/table.js",
+    "@eui/theme/icon": "./@eui/theme/icon.js",
+    "es-module-shims": "./es-module-shims.js",
+    "urlpattern-polyfill": "./urlpattern-polyfill.js"
+  }
+}

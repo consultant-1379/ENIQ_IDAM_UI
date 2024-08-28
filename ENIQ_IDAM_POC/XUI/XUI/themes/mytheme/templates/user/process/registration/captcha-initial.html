@@ -1,0 +1,30 @@
+{{!
+Copyright 2015-2019 ForgeRock AS. All Rights Reserved
+
+Use of this code requires a commercial software license with ForgeRock AS.
+or with one of its affiliates. All use shall be exclusively subject
+to such license between the licensee and ForgeRock AS.
+}}
+<script src='https://www.google.com/recaptcha/api.js'></script>
+<script>
+function handleCaptchaCallback(response) {
+    document.querySelector("#captchaResponse input[name=response]").value = response;
+    document.querySelector("#captchaResponse input[type=submit]").click();
+}
+</script>
+
+<style>
+.g-recaptcha {
+    display: inline-block;
+    margin: 0 auto;
+}
+</style>
+
+<div class="g-recaptcha"
+    data-sitekey="{{requirements.properties.response.recaptchaSiteKey}}"
+    data-callback="handleCaptchaCallback"></div>
+
+<form class="form" id="captchaResponse">
+    <input type="hidden" name="response">
+    <input type="submit" class="hidden">
+</form>

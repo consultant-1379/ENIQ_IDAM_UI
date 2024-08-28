@@ -1,0 +1,56 @@
+{
+  "apps": [
+    {
+      "name": "launcher",
+      "module": "launcher",
+      "displayName": "Ericsson Portal",
+      "type": "euisdk",
+      "route": "launcher",
+      "version": "1.0.0",
+      "hidden": true
+    },
+    {
+      "name": "session-expiration",
+      "module": "error-app",
+      "displayName": "Session Expiration",
+      "type": "euisdk",
+      "route": "session-expiration",
+      "version": "1.0.0",
+      "options": {
+        "error": "session-expired"
+      },
+      "hidden": true
+    }
+  ],
+  "components": [
+    {
+      "name": "settings-plugin",
+      "version": "1.0.0",
+      "module": "settings-plugin",
+      "displayName": "Settings plugin",
+      "type": "euisdk:plugin"
+    },
+    {
+      "name": "authentication",
+      "version": "1.0.0",
+      "module": "authentication",
+      "displayName": "Authentication plugin",
+      "type": "euisdk:plugin"
+    },
+    {
+      "name": "launcher-systembar-component",
+      "module": "e-launcher-systembar-component",
+      "displayName": "Launcher systembar component",
+      "version": "1.0.0",
+      "type": "euisdk:system"
+    },
+    {
+      "name": "systembar-user-info",
+      "module": "e-systembar-user-info",
+      "displayName": "Systembar user info",
+      "version": "1.0.0",
+      "type": "euisdk:system"
+    }
+  ],
+  "groups": []
+}

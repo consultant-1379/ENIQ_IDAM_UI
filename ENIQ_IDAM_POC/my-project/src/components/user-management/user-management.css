@@ -1,0 +1,132 @@
+* style goes here */
+:host{
+  display: block;
+}
+/*page header */
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.padding-sides {
+    padding: 0 1em;
+}
+
+.page-header .home-icon eui-icon {
+    --icon-color: #878181;
+    --icon-size: 3em;
+    margin-right: 0.5em;
+}
+/*tabs block*/
+/*tabs */
+.tabsblock eui-tabs eui-tab{
+    font-size: 18px;
+    margin-right: 10px;
+    border: 1px solid;
+    border-bottom: none;
+    height: 33px;
+}
+.tabsblock eui-tabs eui-tab[selected] {
+    background-color: #1174e6;
+    color: #fff;
+}
+.tabsblock eui-tabs eui-tab.first {
+    margin-left: 0.9em;
+}
+.tabsblock eui-tabs eui-tab:focus{
+   outline: 1px solid transparent;
+}
+/*tabs content*/
+.tabsblock eui-tabs>div[selected] {
+    margin-top: -5px;
+    border-top: 1px solid;
+}
+.tabsblock eui-tabs .tab-content {
+    margin-top: 2.5em;
+}
+/*user search*/
+.user-search{
+    border-bottom: 1px solid;
+    padding-bottom: 1.5em;
+    padding-left: 1em;
+}
+.user-search .search-title{
+    padding-bottom: 0.4em;
+    font-size: 1.1em;
+}
+/*search fields*/
+.show{display: block;}
+.hide{display: none;}
+.user-search .serch-field .search-list{
+ position: relative;
+}
+.user-search .serch-field .search-list eui-menu.userlist{
+    position: absolute;
+    width: 160px;
+}
+/*user details*/
+.user-details{
+    padding-left: 1em;  
+}
+.grid{
+    display: grid;
+    grid-template-columns: auto auto auto auto;
+    grid-column-gap: 2em;
+    grid-template-columns: 30% 15% auto auto;
+    align-items: center;
+}
+.grid .column-1 {
+    max-width: 320px;
+}
+.grid .column-2 {
+    max-width: 200px;
+}
+.user-details form>div,
+.form>div{
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 1em;
+}
+.user-details form .form-submit,
+.form .form-submit{
+  margin-top: 2.5em;
+}
+.btn-radius-pill {
+    --btn-radius: 10px;
+}
+/*user Delete*/
+.user-delete {
+   padding-left: 1em;
+}
+.user-delete .title{
+font-size: 1.2em;
+}
+.user-delete .user-list{
+    max-width: 150px;
+    text-align: center;
+    margin: 1em 0;
+  /*  overflow: auto;
+    height: 200px;*/
+    border: 1px solid;
+}
+.user-delete .user-list .list-title{
+    font-size: 16px;    
+    border-bottom: 1px solid;
+    padding: 0.2em;
+
+}
+.user-delete .user-list eui-menu{
+      position: relative;
+     display: block;
+     width: 100%;
+    --menu-border:transparent;
+}
+.user-delete .user-list eui-menu eui-menu-item{
+    text-align: center;  
+   text-transform: capitalize;
+   --space-base:4px;
+}
+.user-delete .delete-button{
+        margin-top: 4em;
+}

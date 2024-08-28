@@ -1,0 +1,2 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[18],{175:function(n,e,a){var i=a(5);n.exports=(i.default||i).template({compiler:[8,">= 4.3.0"],main:function(n,e,a,i,d){return'<div id="default-base" class="base-wrapper">\n\n    <div id="menu" class="menubar"></div>\n    <div id="content"></div>\n\n</div>\n'},useData:!0})}}]);
+//# sourceMappingURL=18.00fe894b07.js.map

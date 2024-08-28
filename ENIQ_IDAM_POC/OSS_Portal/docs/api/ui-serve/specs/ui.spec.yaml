@@ -1,0 +1,46 @@
+openapi: 3.0.1
+info:
+  title: User Interface Static API Documentation
+  description: |
+    ```
+      Ericsson   |   DocNo <DOC NUMBER>   |   Rev PA1   |   Interwork Description
+    ```
+    ## Introduction
+    This document describes the User Interface identified in the ADP GUI FA.
+    ### Terms
+    - **UI Interface**: static web interface serving the static assets.
+  version: "1.0.0-alpha"
+servers:
+  - url: /ui/
+    description: Base
+tags:
+  - name: IF.GUI.SERVE.WEB
+    description: Static web interface which serves the static assets.
+    x-displayName: UI interface
+paths:
+  /:
+    get:
+      operationId: getMainHtml
+      summary: Get main html
+      description: |
+        Returns the main HTML for the Single Page Application.
+      tags:
+        - IF.GUI.SERVE.WEB
+      responses:
+        200:
+          description: The requested HTML
+        404:
+          description: The requested HTML is not found
+  /*/:
+    get:
+      operationId: getAsset
+      summary: Get static assets
+      description: |
+        The web server returns the static assets of the Portal.
+      tags:
+        - IF.GUI.SERVE.WEB
+      responses:
+        200:
+          description: the resource is found
+        404:
+          description: the resource is not found

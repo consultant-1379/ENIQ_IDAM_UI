@@ -1,0 +1,12 @@
+{
+  "schema-version": "1.0.0",
+  "files": [
+    {
+      "name": "adp_gui_aggregator_service_user_guide",
+      "packageDescription": "GUI Aggregator Service User Guide",
+      "version": "VERSION",
+      "type": "zip",
+      "path": "adp_gui_aggregator_service_user_guide.zip"
+    }
+  ]
+}

@@ -1,0 +1,251 @@
+pipeline {
+  agent {
+    node('presentation')
+  }
+  options {
+    ansiColor('xterm')
+    timeout(time: 1, unit: 'HOURS')
+  }
+  parameters {
+    booleanParam(name: 'PUBLISH_REPORT', defaultValue: false, description: 'Publish the created test report')
+    string(name: 'GAS_VERSION', description: 'The drop (-) version of the GAS Helm chart to deploy. If empty, the latest drop is deployed.')
+  }
+  stages {
+    stage('Clean') {
+      steps {
+        sh 'bob clean'
+      }
+    }
+    stage('Init') {
+      steps {
+        lock(resource: null, label: 'presentation-ci', quantity: 1, variable: 'system') {
+          withCredentials([usernamePassword(credentialsId: 'arm-functional-user', usernameVariable: 'HELM_USER', passwordVariable: 'API_TOKEN')]) {
+            ansiColor('xterm') {
+              sh 'bob -r ci/rulesets/deploy-upgrade-robustness.yaml init'
+            }
+          }
+        }
+      }
+    }
+    stage('Install npm dependencies') {
+      steps {
+        sh 'bob npm-install'
+      }
+    }
+    stage('Deploy GAS to cluster') {
+      steps {
+        lock(resource: null, label: 'presentation-ci', quantity: 1, variable: 'system') {
+          withCredentials([
+            usernamePassword(credentialsId: 'arm-functional-user', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD'),
+            usernamePassword(credentialsId: 'arm-functional-user', usernameVariable: 'HELM_USER', passwordVariable: 'API_TOKEN'),
+            string(credentialsId: 'arm-adpgs-eceaart-api-token', variable: 'API_TOKEN_ADP'),
+            file(credentialsId: env.system, variable: 'KUBECONFIG')
+          ]) {
+            sh 'bob -r ci/rulesets/deploy-upgrade-robustness.yaml install-gas-and-dependencies'
+            sh 'bob -r ci/rulesets/deploy-upgrade-robustness.yaml integration-tests-in-cluster-backend'
+          }
+        }
+      }
+    }
+    stage('Rollout restart') {
+      steps {
+        lock(resource: null, label: 'presentation-ci', quantity: 1, variable: 'system') {
+          withCredentials([
+            usernamePassword(credentialsId: 'arm-functional-user', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD'),
+            usernamePassword(credentialsId: 'arm-functional-user', usernameVariable: 'HELM_USER', passwordVariable: 'API_TOKEN'),
+            string(credentialsId: 'arm-adpgs-eceaart-api-token', variable: 'API_TOKEN_ADP'),
+            file(credentialsId: env.system, variable: 'KUBECONFIG')
+          ]) {
+            sh 'bob -r ci/rulesets/deploy-upgrade-robustness.yaml rollout-restart'
+            sh 'bob -r ci/rulesets/deploy-upgrade-robustness.yaml uninstall-gas'
+          }
+        }
+      }
+    }
+    stage('Install baseline') {
+      steps {
+        lock(resource: null, label: 'presentation-ci', quantity: 1, variable: 'system') {
+          withCredentials([
+            usernamePassword(credentialsId: 'arm-functional-user', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD'),
+            usernamePassword(credentialsId: 'arm-functional-user', usernameVariable: 'HELM_USER', passwordVariable: 'API_TOKEN'),
+            string(credentialsId: 'arm-adpgs-eceaart-api-token', variable: 'API_TOKEN_ADP'),
+            file(credentialsId: env.system, variable: 'KUBECONFIG')
+          ]) {
+            sh 'bob -r ci/rulesets/deploy-upgrade-robustness.yaml install-gas-baseline'
+          }
+        }
+      }
+    }
+    stage('Upgrade from baseline to drop and measure loss of service') {
+      parallel {
+        stage('k6 get api test') {
+          steps {
+            lock(resource: null, label: 'presentation-ci', quantity: 1, variable: 'system') {
+              withCredentials([
+                usernamePassword(credentialsId: 'arm-functional-user', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD'),
+                usernamePassword(credentialsId: 'arm-functional-user', usernameVariable: 'HELM_USER', passwordVariable: 'API_TOKEN'),
+                string(credentialsId: 'arm-adpgs-eceaart-api-token', variable: 'API_TOKEN_ADP'),
+                file(credentialsId: env.system, variable: 'KUBECONFIG')
+              ]) {
+                sh 'bob -r ci/rulesets/deploy-upgrade-robustness.yaml k6-get-api-test'
+              }
+            }
+          }
+        }
+        stage('Upgrade to drop') {
+          steps {
+            lock(resource: null, label: 'presentation-ci', quantity: 1, variable: 'system') {
+              withCredentials([
+                usernamePassword(credentialsId: 'arm-functional-user', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD'),
+                usernamePassword(credentialsId: 'arm-functional-user', usernameVariable: 'HELM_USER', passwordVariable: 'API_TOKEN'),
+                string(credentialsId: 'arm-adpgs-eceaart-api-token', variable: 'API_TOKEN_ADP'),
+                file(credentialsId: env.system, variable: 'KUBECONFIG')
+              ]) {
+                sh 'bob -r ci/rulesets/deploy-upgrade-robustness.yaml upgrade-from-baseline-to-drop-and-measure-lead-time'
+              }
+            }
+          }
+        }
+      }
+    }
+    stage('Integration tests after upgrade') {
+      steps {
+        lock(resource: null, label: 'presentation-ci', quantity: 1, variable: 'system') {
+          withCredentials([
+            usernamePassword(credentialsId: 'arm-functional-user', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD'),
+            usernamePassword(credentialsId: 'arm-functional-user', usernameVariable: 'HELM_USER', passwordVariable: 'API_TOKEN'),
+            string(credentialsId: 'arm-adpgs-eceaart-api-token', variable: 'API_TOKEN_ADP'),
+            file(credentialsId: env.system, variable: 'KUBECONFIG')
+          ]) {
+            sh 'bob -r ci/rulesets/deploy-upgrade-robustness.yaml integration-tests-in-cluster-backend'
+            sh 'bob -r ci/rulesets/deploy-upgrade-robustness.yaml uninstall-gas-with-suffix'
+          }
+        }
+      }
+    }
+    stage('Scale out tests') {
+      steps {
+        lock(resource: null, label: 'presentation-ci', quantity: 1, variable: 'system') {
+          withCredentials([
+            usernamePassword(credentialsId: 'arm-functional-user', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD'),
+            usernamePassword(credentialsId: 'arm-functional-user', usernameVariable: 'HELM_USER', passwordVariable: 'API_TOKEN'),
+            string(credentialsId: 'arm-adpgs-eceaart-api-token', variable: 'API_TOKEN_ADP'),
+            file(credentialsId: env.system, variable: 'KUBECONFIG')
+          ]) {
+            sh 'bob -r ci/rulesets/deploy-upgrade-robustness.yaml install-gas-drop'
+            sh 'bob -r ci/rulesets/deploy-upgrade-robustness.yaml scale-out'
+            sh 'bob -r ci/rulesets/deploy-upgrade-robustness.yaml integration-tests-in-cluster-backend'
+          }
+        }
+      }
+    }
+    stage('Scale in tests') {
+      steps {
+        lock(resource: null, label: 'presentation-ci', quantity: 1, variable: 'system') {
+          withCredentials([
+            usernamePassword(credentialsId: 'arm-functional-user', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD'),
+            usernamePassword(credentialsId: 'arm-functional-user', usernameVariable: 'HELM_USER', passwordVariable: 'API_TOKEN'),
+            string(credentialsId: 'arm-adpgs-eceaart-api-token', variable: 'API_TOKEN_ADP'),
+            file(credentialsId: env.system, variable: 'KUBECONFIG')
+          ]) {
+            sh 'bob -r ci/rulesets/deploy-upgrade-robustness.yaml scale-in'
+            sh 'bob -r ci/rulesets/deploy-upgrade-robustness.yaml integration-tests-in-cluster-backend'
+            sh 'bob -r ci/rulesets/deploy-upgrade-robustness.yaml uninstall-gas'
+          }
+        }
+      }
+    }
+    stage('Install baseline for rollback') {
+      steps {
+        lock(resource: null, label: 'presentation-ci', quantity: 1, variable: 'system') {
+          withCredentials([
+            usernamePassword(credentialsId: 'arm-functional-user', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD'),
+            usernamePassword(credentialsId: 'arm-functional-user', usernameVariable: 'HELM_USER', passwordVariable: 'API_TOKEN'),
+            string(credentialsId: 'arm-adpgs-eceaart-api-token', variable: 'API_TOKEN_ADP'),
+            file(credentialsId: env.system, variable: 'KUBECONFIG')
+          ]) {
+            sh 'bob -r ci/rulesets/deploy-upgrade-robustness.yaml install-gas-baseline'
+          }
+        }
+      }
+    }
+    stage('Upgrade from baseline to drop for rollback') {
+      steps {
+        lock(resource: null, label: 'presentation-ci', quantity: 1, variable: 'system') {
+          withCredentials([
+            usernamePassword(credentialsId: 'arm-functional-user', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD'),
+            usernamePassword(credentialsId: 'arm-functional-user', usernameVariable: 'HELM_USER', passwordVariable: 'API_TOKEN'),
+            string(credentialsId: 'arm-adpgs-eceaart-api-token', variable: 'API_TOKEN_ADP'),
+            file(credentialsId: env.system, variable: 'KUBECONFIG')
+          ]) {
+            sh 'bob -r ci/rulesets/deploy-upgrade-robustness.yaml upgrade-from-baseline-to-drop'
+          }
+        }
+      }
+    }
+    stage('Rollback to baseline') {
+      steps {
+        lock(resource: null, label: 'presentation-ci', quantity: 1, variable: 'system') {
+          withCredentials([
+            usernamePassword(credentialsId: 'arm-functional-user', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD'),
+            usernamePassword(credentialsId: 'arm-functional-user', usernameVariable: 'HELM_USER', passwordVariable: 'API_TOKEN'),
+            string(credentialsId: 'arm-adpgs-eceaart-api-token', variable: 'API_TOKEN_ADP'),
+            file(credentialsId: env.system, variable: 'KUBECONFIG')
+          ]) {
+            sh 'bob -r ci/rulesets/deploy-upgrade-robustness.yaml rollback-to-baseline'
+            sh 'bob -r ci/rulesets/deploy-upgrade-robustness.yaml uninstall-gas-with-suffix'
+          }
+        }
+      }
+    }
+    stage('Upgrade from latest plus to drop') {
+      steps {
+        lock(resource: null, label: 'presentation-ci', quantity: 1, variable: 'system') {
+          withCredentials([
+             usernamePassword(credentialsId: 'arm-functional-user', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD'),
+             usernamePassword(credentialsId: 'arm-functional-user', usernameVariable: 'HELM_USER', passwordVariable: 'API_TOKEN'),
+             string(credentialsId: 'arm-adpgs-eceaart-api-token', variable: 'API_TOKEN_ADP'),
+             file(credentialsId: env.system, variable: 'KUBECONFIG')
+          ]) {
+            sh 'bob -r ci/rulesets/deploy-upgrade-robustness.yaml upgrade-from-latest-plus-to-drop'
+            sh 'bob -r ci/rulesets/deploy-upgrade-robustness.yaml integration-tests-in-cluster-backend'
+           }
+        }
+      }
+    }
+    stage('Create Test report') {
+      steps {
+        lock(resource: null, label: 'presentation-ci', quantity: 1, variable: 'system') {
+          withCredentials([file(credentialsId: env.system, variable: 'KUBECONFIG')]) {
+            sh 'bob -r ci/rulesets/deploy-upgrade-robustness.yaml create-test-report'
+          }
+        }
+      }
+    }
+    stage('Publish Test report') {
+      when { expression { env.PUBLISH_REPORT == 'true' } }
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'arm-functional-user', usernameVariable: 'HELM_USER', passwordVariable: 'API_TOKEN'),
+        usernamePassword(credentialsId: 'eridoc-username-password', usernameVariable: 'ERIDOC_USERNAME', passwordVariable: 'ERIDOC_PASSWORD')]) {
+          sh 'bob -r ci/rulesets/deploy-upgrade-robustness.yaml publish-test-report'
+        }
+      }
+    }
+    stage('Namespace Cleanup') {
+      steps {
+        lock(resource: null, label: 'presentation-ci', quantity: 1, variable: 'system') {
+          withCredentials([file(credentialsId: env.system, variable: 'KUBECONFIG')]) {
+            ansiColor('xterm') {
+              sh 'bob namespace-cleanup'
+            }
+          }
+        }
+      }
+    }
+  }
+  post {
+    always {
+      archiveArtifacts 'build/doc-archive/k8s-test-report/k8s-test-report.md'
+    }
+  }
+}

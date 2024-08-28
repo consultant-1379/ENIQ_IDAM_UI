@@ -1,0 +1,32 @@
+// variables
+@base-theme-color:#0c0c0c;
+@background-color:transparent;
+@failure-color:#d9534f;
+
+// mixins
+.icon-circle(@val){
+    border-radius:@val;
+}
+.fa-icon(){
+    display: inline-block;
+    font: normal normal normal 14px/1 FontAwesome;
+    font-size: inherit;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+}
+.ellipsis{
+    white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.transition(@property, @duration, @style){
+     transition: @property  @duration @style;
+}
+.transition(@property, @duration){
+    transition: @property  @duration;
+}
+.transition(@arguments){
+    transition: @arguments;
+}
+
+

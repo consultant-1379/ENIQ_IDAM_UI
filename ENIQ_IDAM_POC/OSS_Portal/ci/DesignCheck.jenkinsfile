@@ -1,0 +1,98 @@
+pipeline {
+  agent {
+    node('presentation')
+  }
+  options {
+    ansiColor('xterm')
+    timeout(time: 1, unit: 'HOURS')
+    buildDiscarder(logRotator(numToKeepStr: '30', artifactNumToKeepStr: '30'))
+  }
+  stages {
+    stage('Prepare') {
+      steps {
+        sh 'bob --dryrun $(bob -lq)'
+      }
+    }
+    stage('Clean') {
+      steps {
+        sh 'bob clean'
+      }
+    }
+    stage('Init') {
+      steps {
+        sh 'bob init-precodereview'
+      }
+    }
+    stage('Build image') {
+      steps {
+        sh 'bob image'
+      }
+    }
+    stage('Check helm warnings') {
+      steps {
+        script {
+          env.CHART_CHECK_FAILED = sh(
+            script:'bob -r ci/rulesets/misc-job-rules.yaml helm-warning-check',
+            returnStatus:true
+          )
+        }
+        withCredentials([
+          usernamePassword(credentialsId: 'arm-functional-user', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD'),
+          usernamePassword(credentialsId: 'arm-functional-user', usernameVariable: 'HELM_USER', passwordVariable: 'API_TOKEN')
+        ]) {
+          sh 'bob package-local'
+          script {
+            env.IMAGE_CHECK_FAILED = sh(
+              script:'bob -r ci/rulesets/misc-job-rules.yaml helm-warning-image-check',
+              returnStatus:true
+            )
+          }
+        }
+        script {
+          if (env.CHART_CHECK_FAILED != '0' || env.IMAGE_CHECK_FAILED != '0') {
+            echo 'Chart Check:'
+            echo env.CHART_CHECK_FAILED
+            echo 'Image Check:'
+            echo env.IMAGE_CHECK_FAILED
+            error('Either Chart Check or Image check failed! Check HTML reports for more information.')
+          }
+        }
+      }
+    }
+  }
+  post {
+    always {
+      archiveArtifacts '**/design-rule-check-report.html'
+      archiveArtifacts '**/image-design-rule-check-report.html'
+      publishHTML(target: [
+        allowMissing: false,
+        alwaysLinkToLastBuild: false,
+        keepAll: true,
+        reportDir: '.bob/check-charts/',
+        reportFiles: 'design-rule-check-report.html',
+        reportName: 'Helm Design Rule Chart Check'
+      ])
+      publishHTML(target: [
+        allowMissing: false,
+        alwaysLinkToLastBuild: false,
+        keepAll: true,
+        reportDir: '.bob/check-image/',
+        reportFiles: 'image-design-rule-check-report.html',
+        reportName: 'Helm Design Rule Image Check'
+      ])
+    }
+    failure {
+      mail to: 'f98b007c.ericsson.onmicrosoft.com@emea.teams.ms',
+      subject: "Failed Pipeline: ${currentBuild.fullDisplayName}",
+      body: "Failure on ${env.BUILD_URL}"
+      withCredentials([string(credentialsId: 'JIRA_token_eceaproj', variable: 'JIRA_TOKEN')]) {
+        sh 'bob -r ci/rulesets/misc-job-rules.yaml create-design-jira-card'
+      }
+      archiveArtifacts 'jira_**'
+    }
+    cleanup {
+      sh "docker ps -a -q --filter label=$BUILD_TAG | xargs --no-run-if-empty  docker stop"
+      sh "docker ps -a -q --filter label=$BUILD_TAG | xargs --no-run-if-empty  docker rm"
+    }
+  }
+}

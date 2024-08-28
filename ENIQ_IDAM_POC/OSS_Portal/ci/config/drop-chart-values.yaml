@@ -1,0 +1,23 @@
+ingress:
+  enabled: true
+  useContour: true
+  hostname:
+  path:
+  ingressClass: EEA-Applications
+  adpIccrServiceName: eric-eea-ingress-ctrl-common
+
+log:
+  streamingMethod: indirect
+
+configuration:
+  faultIndications:
+    enabled: false
+
+metrics:
+  enabled: false
+
+manualconfig:
+  groupMappings:
+    - group: mock-group
+      apps:
+        - charts

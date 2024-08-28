@@ -1,0 +1,109 @@
+/* style goes here */
+:host{
+  display: block;
+}
+/* all container  style */
+.d-none{
+  display: none;
+}
+.container{
+    padding:18px 16px;
+    background-color: var(--gray-14,#242424);
+   margin-bottom: 3px;
+}
+/* search style */
+.search_bar eui-text-field{
+ width: 45vw;
+ --input-background:var(--gray-09, #181818);
+ --input-border:#8e45b0;
+ --input-text:var(--gray-95,#f2f2f2); 
+ --text:var(--gray-95,#f2f2f2);
+}
+/* product */
+.products_list{
+  margin: 24px 0px;
+}
+.container .title{
+   color: #f2f2f2;
+   font-size: 16px;
+   font-weight: 500;
+}
+.products{
+  --text:#fff;
+}
+.products .list{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 28px;
+}
+.products .list .list-item{
+    display: flex;
+    width: 22%;
+    align-items: center;
+    gap:16px;
+    padding: 8px 16px;
+    box-sizing: border-box;
+}
+.products .list .list-item eui-icon{
+   --icon-size: 42px;
+    padding: 8px;
+    background-color:var(--gray-31,#4e4e4e);
+    border-radius: 3px;
+    
+}
+.products .list .list-item  eui-link.product-name{
+   --blue: #f2f2f2;
+  --link-blue:#f2f2f2;
+  max-width: 160px;
+  font-size: 16px;
+}
+.products .expand{
+    color: #f2f2f2;
+    border-bottom: 1px dashed #f2f2f2;
+    display: inline-block;
+    cursor: pointer;
+}
+/* Recent and Favorite Apps */
+/* Recent Apps */
+.apps-block .block-header{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.apps-block .block-header .view-all{
+    color: #008cff;
+    font-size: 14px;
+    position: relative;
+    top: 2px;
+    cursor: pointer;
+} 
+.apps .apps-list{
+  display: flex;
+  gap: 16px;
+  margin: 24px 0px;
+  padding: 0 16px;
+}
+.apps .apps-list .list-item{
+  display: flex;
+  justify-content: space-between;
+  width: 24%;
+  border: 2px solid #767676;
+  padding: 16px;
+  background-color: #181818;
+  height: 72px;
+    box-sizing: border-box;
+}
+
+.apps .apps-list .list-item  eui-link{
+  --link-blue:#f2f2f2;
+}
+.apps .apps-list .list-item .icons eui-icon{
+  --icon-color: #f2f2f2;
+}
+.apps .apps-list .list-item .icons eui-tooltip{
+  --tooltip-background-action:#f2f2f2;
+  --white:#242424;
+}
+.apps .apps-list .list-item .icons eui-icon[name=favorite-solid]{
+  --icon-color:#dcaf00;
+}

@@ -1,0 +1,30 @@
+<!--
+  Copyright 2021 ForgeRock AS. All Rights Reserved
+ 
+  Use of this code requires a commercial software license with ForgeRock AS.
+  or with one of its affiliates. All use shall be exclusively subject
+  to such license between the licensee and ForgeRock AS.
+-->
+{{#each providers}}
+  {{#equals provider 'localAuthentication'}}
+    <input type="hidden" name="callback_{{../index}}" id="localAuthentication" value="localAuthentication">
+  {{else}}
+    <div class="form-group">
+      <button class="btn btn-light btn-block fr-social-login-button fr-social-login-button--{{provider}} {{uiConfig.buttonClass}} js-select-idp-button" name="callback_{{../index}}" value="{{provider}}" type="button">
+        {{#if uiConfig.buttonImage}}<img src="{{uiConfig.buttonImage}}">{{/if}}
+        {{uiConfig.buttonDisplayName}}
+      </button>
+    </div>
+    <style>
+      .fr-social-login-button--{{provider}} {
+        {{uiConfig.buttonCustomStyle}}
+      }
+
+      .fr-social-login-button--{{provider}}:hover {
+        {{uiConfig.buttonCustomStyleHover}}
+      }
+    </style>
+  {{/equals}}
+{{/each}}
+
+{{#unless onlyCallback}}<hr class="fr-hr-with-text" data-content="{{t 'common.form.or' }}">{{/unless}}

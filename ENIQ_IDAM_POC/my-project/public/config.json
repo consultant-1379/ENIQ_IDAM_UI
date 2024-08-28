@@ -1,0 +1,235 @@
+{
+  "apps": [
+    {
+      "name": "todo-app",
+      "module": "todo-app",
+      "displayName": "Todo",
+      "type": "euisdk",
+      "route": "todo-app",
+      "descriptionShort": "Todosub",
+      "childNames": [
+        "user-profile",
+        "useraccess-management",
+        "app-launcher",
+        "user-management",
+        "eniq-launcher",
+        "eniq"
+      ]
+    },
+    {
+      "name": "user-management",
+      "module": "user-management",
+      "displayName": "User Management",
+      "type": "euisdk",
+      "route": "user-management"
+    },
+    {
+      "name": "user-profile",
+      "displayName": "User Profile",
+      "module": "user-profile",
+      "route": "profile"
+    },
+    {
+      "name": "useraccess-management",
+      "displayName": "User Access management",
+      "module": "useraccess-management",
+      "route": "useraccess-management"
+    },
+    {
+      "name": "app-launcher",
+      "displayName": "App launcher",
+      "module": "app-launcher",
+      "route": "app-launcher"
+    },
+    {
+      "name": "user-management",
+      "displayName": "User Management",
+      "module": "user-management",
+      "route": "user-management"
+    },
+    {
+      "name": "eniq-launcher",
+      "displayName": "Eniq Launcher",
+      "module": "eniq-launcher",
+      "route": "eniq-launcher"
+    },
+    {
+      "name": "eniq",
+      "displayName": "Eniq",
+      "module": "eniq",
+      "route": "eniq"
+    },
+    {
+      "name": "self-service-app",
+      "module": "self-service-app",
+      "displayName": "Self Service",
+      "type": "euisdk",
+      "route": "self-service-app",
+      "childNames": [
+        "ss-change-password",
+        "ss-change-details",
+        "ss-setup-passwordless"
+      ]
+    },
+    {
+      "name": "ss-change-password",
+      "displayName": "Change Password",
+      "module": "ss-change-password",
+      "route": "change-password"
+    },
+    {
+      "name": "ss-change-details",
+      "displayName": "Change Details",
+      "module": "ss-change-details",
+      "route": "change-details"
+    },
+    {
+      "name": "ss-setup-passwordless",
+      "displayName": "Setup Passwordless Login",
+      "module": "ss-setup-passwordless",
+      "route": "setup-passwordless"
+    },
+    {
+      "name": "user-management-app",
+      "module": "user-management-app",
+      "displayName": "User Management",
+      "type": "euisdk",
+      "route": "user-management-app",
+      "childNames": [
+        "um-add-user",
+        "um-edit-user"
+      ]
+    },
+    {
+      "name": "um-add-user",
+      "displayName": "Add User",
+      "module": "um-add-user",
+      "route": "add-user"
+    },
+    {
+      "name": "um-edit-user",
+      "displayName": "Edit User",
+      "module": "um-edit-user",
+      "route": "user-edit"
+    },
+    {
+      "name": "eniq-launcher-app",
+      "module": "eniq-launcher-app",
+      "displayName": "Application Launcher ",
+      "type": "euisdk",
+      "route": "eniq-launcher-app",
+      "childNames": [
+        "user-profile",
+        "useraccess-management",
+        "app-launcher",
+        "user-management",
+        "eniq-launcher",
+        "eniq"
+      ]
+    }
+  ],
+  "components": [
+    {
+      "name": "system-profile",
+      "module": "profile",
+      "version": "1.0.0"
+    },
+    {
+      "name": "system-app-launcher",
+      "module": "app-launcher",
+      "version": "1.0.0"
+    },
+    {
+      "name": "date-heading",
+      "module": "date-heading",
+      "version": "1.0.0"
+    },
+    {
+      "name": "user-profile",
+      "module": "user-profile",
+      "route": "profile",
+      "version": "1.0.0"
+    },
+    {
+      "name": "app-launcher",
+      "module": "app-launcher",
+      "version": "1.0.0"
+    },
+    {
+      "name": "user-management",
+      "module": "user-management",
+      "version": "1.0.0"
+    },
+    {
+      "name": "useraccess-management",
+      "module": "useraccess-management",
+      "version": "1.0.0"
+    },
+    {
+      "name": "login",
+      "module": "login",
+      "version": "1.0.0"
+    },
+    {
+      "name": "launcher-page",
+      "module": "launcher-page",
+      "version": "1.0.0"
+    },
+    {
+      "name": "custom-system-bar",
+      "module": "custom-system-bar",
+      "version": "1.0.0"
+    },
+    {
+      "name": "eniq-launcher",
+      "module": "eniq-launcher",
+      "version": "1.0.0"
+    },
+    {
+      "name": "eniq",
+      "module": "eniq",
+      "version": "1.0.0"
+    },
+    {
+      "name": "um-users-table",
+      "module": "um-users-table",
+      "version": "1.0.0"
+    },
+    {
+      "name": "um-add-user",
+      "module": "um-add-user",
+      "displayName": "Add user",
+      "version": "1.0.0"
+    },
+    {
+      "name": "um-apps-groups",
+      "module": "um-apps-groups",
+      "version": "1.0.0"
+    },
+    {
+      "name": "um-edit-user",
+      "module": "um-edit-user",
+      "version": "1.0.0"
+    },
+    {
+      "name": "um-userdetails-edit",
+      "module": "um-userdetails-edit",
+      "version": "1.0.0"
+    },
+    {
+      "name": "ss-change-password",
+      "module": "ss-change-password",
+      "version": "1.0.0"
+    },
+    {
+      "name": "ss-change-details",
+      "module": "ss-change-details",
+      "version": "1.0.0"
+    },
+    {
+      "name": "ss-setup-passwordless",
+      "module": "ss-setup-passwordless",
+      "version": "1.0.0"
+    }
+  ]
+}

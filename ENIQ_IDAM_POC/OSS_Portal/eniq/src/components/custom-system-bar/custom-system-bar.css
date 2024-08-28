@@ -1,0 +1,9 @@
+/* style goes here */
+:host {
+  display: block;
+  cursor: pointer;
+  opacity: 0.8;
+}
+:host(:hover) {
+  opacity: 1.0;
+}

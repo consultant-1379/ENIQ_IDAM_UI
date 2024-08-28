@@ -1,0 +1,120 @@
+openapi: 3.0.1
+info:
+  title: User Interface Internal API Documentation
+  description: |
+    ```
+      Ericsson   |   DocNo n/155 19-CAF CAF 101 105/3   |   Rev PA1   |   Interwork Description
+    ```
+    ## Introduction
+    This document describes the User Interface Internal REST API identified in the ADP GUI FA.
+    ### Terms
+    - **UI Internal Interface**: The interface providing access to static content meant to be used exclusively by the User Interface itself. All static content paths are relative to this URI.
+    - **Client Container**: An SPA (Single Page Application) implementing the App Shell pattern e.g. E-UI SDK Container.
+    - **UI App**: A full screen user interface exposed by a Microservice that can execute in the Client Container e.g. E-UI SDK App.
+      - ***External UI App***: Any UIs that have a separate web page (outside the Client Container) or other alternative renderer e.g. Citrix.
+    - **UI Component**: A reusable, embeddable UI Web Component exposed by a Microservice e.g. E-UI SDK Shareable Components.
+  version: "1.0.0-alpha"
+servers:
+  - url: /gas-internal
+    description: Base
+tags:
+  - name: IF.GUI.INTERNAL.REST
+    description: Provides access to static content meant to be used by the User Interface.
+    x-displayName: UI Internal Interface
+paths:
+  /uiConfig:
+    get:
+      operationId: getUiConfig
+      summary: API for internal configs
+      description: Endpoint to provide the current frontend-config JSON to the UI. The config is constructed from the helm values.
+      tags:
+        - IF.GUI.INTERNAL.REST
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ui.deployment.config.response"
+              example:
+                logging:
+                  logLevel: "info"
+                routes:
+                  internal:
+                    prefix: "/gas-internal"
+                    routes:
+                      config: "/uiConfig"
+                  meta:
+                    prefix: "/ui-meta/v1"
+                    routes:
+                      apps: "/app"
+                      groups: "/groups"
+                      components: "/components"
+                  logging:
+                    prefix: "/ui-logging/v1"
+                    routes:
+                      logs: "/logs"
+                  serve:
+                    prefix: "/ui-serve/v1"
+                    routes:
+                      static: "/static"
+                      importMap: "/import-map"
+                      packages: "/list-packages"
+                logoutURL: "#"
+                userAccountURL: ""
+
+components:
+  schemas:
+    ui.deployment.config.response:
+      type: object
+      properties:
+        logging:
+          description: Settings for UI logging
+          type: object
+          properties:
+            logLevel:
+              description: Full name of an UI entity. Well-known name defined during development time
+              type: string
+              enum: [debug, info, warning, error, critical]
+        routes:
+          description: Optional definition of custom API routes
+          type: object
+          properties:
+            internal:
+              description: The internal API description
+              type: object
+              properties:
+                prefix:
+                  type: string
+                routes:
+                  type: object
+            meta:
+              description: The meta API description
+              type: object
+              properties:
+                prefix:
+                  type: string
+                routes:
+                  type: object
+            logging:
+              description: The logging API description
+              type: object
+              properties:
+                prefix:
+                  type: string
+                routes:
+                  type: object
+            serve:
+              description: The serve API description
+              type: object
+              properties:
+                prefix:
+                  type: string
+                routes:
+                  type: object
+          logoutURL:
+            description: The logout url of the authentication server
+            type: string
+          userAccountURL:
+            description: The url where user account settings can be accessed
+            type: string

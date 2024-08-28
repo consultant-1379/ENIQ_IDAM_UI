@@ -1,0 +1,127 @@
+openapi: 3.0.1
+info:
+  title: User Interface Logging API Documentation
+  description: |
+    ```
+      Ericsson   |   DocNo <DOC NUMBER>   |   Rev PA1   |   Interwork Description
+    ```
+    # Introduction
+    This document describes the User Interface Logging REST API.
+
+    This will enable UI applications and containers to post logs captured from the user UI session.
+    UI Service captures and sends the logs to centralized log transformer.
+
+  version: "1.0.0-alpha"
+servers:
+  - url: /ui-logging/v1
+    description: Base URL
+tags:
+  - name: IF.GUI.LOG.REST
+    x-displayName: UI Log Interface
+paths:
+  /logs:
+    post:
+      tags:
+        - IF.GUI.LOG.REST
+      summary: Report UI Logs
+      description: Sends UI user session events.
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              $ref: "#/components/schemas/Logs"
+            examples:
+              adp.ui.logs:
+                $ref: "#/components/examples/UILogs"
+      responses:
+        "200":
+          description: Logs saved successfully.
+        "500":
+          $ref: "#/components/responses/InternalErrorResponse"
+components:
+  schemas:
+    Log:
+      type: object
+      description: Log Object.
+      required:
+        - timestamp
+        - severity
+        - message
+      properties:
+        timestamp:
+          description: Log generation timestamp as per RFC 5424. YYYY-MM-DDThh:mm:ss.sss±hh:mm.
+          type: string
+        severity:
+          description: Log severity level.
+          type: string
+          enum:
+            - debug
+            - info
+            - warning
+            - error
+            - critical
+        applicationName:
+          description: Name of the UI application which produces log
+          type: string
+        message:
+          description: Detailed log message.
+          type: string
+        category:
+          description: An identifier of the type of message. This Shall follows GL-D1114-070-A,D.
+          type: string
+        uniqueLogId:
+          description: Unique log identifier identifies uniquely in the service code the origin of a logged event across multiple versions of the service.
+          type: string
+    Logs:
+      type: object
+      properties:
+        logs:
+          type: array
+          items:
+            $ref: "#/components/schemas/Log"
+    Error:
+      type: object
+      description: User Interface API Error Response
+      required:
+        - status
+        - code
+        - message
+      properties:
+        status:
+          description: HTTP status code.
+          type: integer
+        code:
+          description: Application specific error code.
+          type: string
+        message:
+          description: Short error description.
+          type: string
+        details:
+          description: Detailed error message.
+          type: string
+  responses:
+    InternalErrorResponse:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          examples:
+            adp.error.internal:
+              $ref: "#/components/examples/ADPErrorInternal"
+  examples:
+    ADPErrorInternal:
+      value:
+        status: 500
+        code: adp.error.internal
+        message: Unable to perform the operation.
+    UILogs:
+      value:
+        logs:
+          - timestamp: 2020-10-03T11:15:00.000+01:00
+            severity: error
+            message: Unable to load the vendor.js file.
+            applicationName: common-launcher
+          - timestamp: 2020-10-03T10:15:00.002Z
+            severity: info
+            message: User authorized successfully.

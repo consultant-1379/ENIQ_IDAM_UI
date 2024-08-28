@@ -1,0 +1,513 @@
+modelVersion: 2.0
+import:
+  common: ../../ruleset2.0.yaml
+  functions: ../../ruleset-functions.yaml
+  release: release-rules.yaml
+
+env:
+  - GAS_VERSION (default=>0.0.0-0) #Default gives the latest
+
+docker-images:
+  - k6Image: armdocker.rnd.ericsson.se/dockerhub-ericsson-remote/loadimpact/k6:latest
+
+var:
+  - version
+  - mock-service-iccr-value
+  - rollout-restart-start-time
+  - rollout-restart-finish-time
+  - baseline-upgrade-start-time
+  - baseline-upgrade-finish-time
+  - lplus-upgrade-start-time
+  - lplus-upgrade-finish-time
+  - scale-out-finish-time
+  - scale-out-start-time
+  - scale-in-finish-time
+  - scale-in-start-time
+  - rollback-start-time
+  - rollback-finish-time
+  - eric-sec-key-management-version
+  - eric-data-distributed-coordinator-ed-version
+  - eric-sec-sip-tls-version
+  - helm-chart-file-name-baseline
+  - loss-of-service
+
+properties:
+  - helm-drop-artifactory: ${common.helm-chart-repo-server}/proj-eea-drop-helm/${common.helm-chart-name}
+  - helm-release-artifactory: ${common.helm-chart-repo-server}//proj-eea-released-helm/${common.helm-chart-name}
+  - mocks-config-yaml: ci/config/mocks-config.yaml
+  - baseline-version: "2.2.0-57"
+  - scale-out: 5
+  - scale-in: 1
+  - report-name: k8s-test-report
+  - report-generation-output: build/doc-archive/k8s-test-report/
+  - k6-get-api-test-path: load-test/report/k6-get-api-test-report.json
+  - helm-release-name: "application-under-test"
+  - helm-release-name-with-suffix: "application-under-test-br"
+
+rules:
+  init:
+    - rule: common.init-robustness
+
+  #this installs the latest drop version by default
+  install-gas-and-dependencies:
+    - rule: download-gas-drop-chart
+    - rule: download-gas-baseline-chart
+    # We do not need any extra values to ci chart
+    - task: set-default-additional-dependencies-values
+      cmd: echo "" > .bob/var.additional-dependencies-chart-values
+    # contour rewrite does not support - so need to replace with _ in the path string
+    - task: convert-iccr-path
+      cmd: echo "${var.common.k8s-namespace}" | sed -r 's/-/_/g' > .bob/var.ingress-iccr-path
+    - rule: common.generate-dummy-service-all
+    - rule: services-ip-pool-test
+    - rule: install-ci-and-mocks
+    - rule: set-chart-values-drop
+    - rule: set-drop-version-to-version
+    - rule: install-gas-drop
+    - rule: enable-mocks
+    - rule: wait-for-domain-apps-to-be-discovered
+
+  install-gas-drop:
+    - rule: common.install-gas
+
+  uninstall-gas:
+    - rule: functions.uninstall-gas
+      properties:
+        - deployment-to-uninstall: ${helm-release-name}
+
+  uninstall-gas-with-suffix:
+    - rule: functions.uninstall-gas
+      properties:
+        - deployment-to-uninstall: ${helm-release-name-with-suffix}
+
+  rollout-restart:
+    - task: save-rollout-restart-start-time
+      cmd:
+        - date "+%s" > .bob/var.rollout-restart-start-time
+    - task: system-rollout-restart
+      docker-image: common.k8-test
+      docker-flags:
+        - "--network=host"
+        - "--env KUBECONFIG=${env.common.KUBECONFIG}"
+        - "--volume ${env.common.KUBECONFIG}:${env.common.KUBECONFIG}:ro"
+        - "--volume ${env.common.PWD}:${env.common.PWD}"
+      cmd: >
+        /bin/bash -c '
+        kubectl rollout restart deployment ${common.helm-chart-name} -n ${var.common.k8s-namespace};
+        kubectl rollout status --watch --timeout=1800s -n ${var.common.k8s-namespace} deployment ${common.helm-chart-name} || exit 1;
+        '
+    - task: save-rollout-restart-finish-time
+      cmd:
+        - date "+%s" > .bob/var.rollout-restart-finish-time
+
+  install-gas-baseline:
+    - task: install-gas-baseline
+      docker-image: common.k8-test
+      docker-flags:
+        - "--network=host"
+        - "--env KUBECONFIG=${env.common.KUBECONFIG}"
+        - "--volume ${env.common.KUBECONFIG}:${env.common.KUBECONFIG}:ro"
+        - "--volume ${env.common.PWD}:${env.common.PWD}"
+      cmd:
+        - test.py --helm-v3 --kubernetes-admin-conf=${env.common.KUBECONFIG}
+          --helm-user=${env.common.HELM_USER}
+          --arm-api-token=${env.common.API_TOKEN}
+          --kubernetes-namespace=${var.common.k8s-namespace}
+          --chart-archive=.bob/${common.helm-chart-name}-internal-baseline/${var.helm-chart-file-name-baseline}
+          --helm-repo=${common.helm-chart-drop-repo}
+          --docker-server=${common.image-registry}
+          --docker-username=${env.common.DOCKER_USERNAME}
+          --docker-password=${env.common.DOCKER_PASSWORD}
+          --secret-name=${common.image-pullsecret}
+          --helm_variables="${var.common.additional-chart-values}"
+          --helm_value_file="${var.common.additional-chart-values-file}"
+          --baseline_chart_version=${baseline-version}
+          --helm-timeout=600
+          --skip-cleanup
+          --ignore-cleanup
+
+  upgrade-from-baseline-to-drop:
+    - task: upgrade-from-baseline-to-drop
+      docker-image: common.k8-test
+      docker-flags:
+        - "--network=host"
+        - "--env KUBECONFIG=${env.common.KUBECONFIG}"
+        - "--volume ${env.common.KUBECONFIG}:${env.common.KUBECONFIG}:ro"
+        - "--volume ${env.common.PWD}:${env.common.PWD}"
+      cmd:
+        - test.py --helm-v3 --kubernetes-admin-conf=${env.common.KUBECONFIG}
+          --helm-user=${env.common.HELM_USER}
+          --arm-api-token=${env.common.API_TOKEN}
+          --kubernetes-namespace=${var.common.k8s-namespace}
+          --chart-archive=.bob/${common.helm-chart-name}-internal/${var.common.helm-chart-file-name}
+          --helm-repo=${common.helm-chart-drop-repo}
+          --docker-server=${common.image-registry}
+          --docker-username=${env.common.DOCKER_USERNAME}
+          --docker-password=${env.common.DOCKER_PASSWORD}
+          --secret-name=${common.image-pullsecret}
+          --helm_variables="${var.common.additional-chart-values}"
+          --helm_value_file="${var.common.additional-chart-values-file}"
+          --baseline_chart_version=${baseline-version}
+          --helm-release-name=${helm-release-name-with-suffix}
+          --helm-timeout=600
+          --skip-cleanup
+          --ignore-cleanup
+          --only-upgrade
+
+  install-latest-plus-and-upgrade-to-drop:
+    - task: install-latest-plus-and-upgrade-to-drop
+      docker-image: common.k8-test
+      docker-flags:
+        - "--network=host"
+        - "--env KUBECONFIG=${env.common.KUBECONFIG}"
+        - "--volume ${env.common.KUBECONFIG}:${env.common.KUBECONFIG}:ro"
+        - "--volume ${env.common.PWD}:${env.common.PWD}"
+      cmd:
+        - test.py --helm-v3 --kubernetes-admin-conf=${env.common.KUBECONFIG}
+          --helm-user=${env.common.HELM_USER}
+          --arm-api-token=${env.common.API_TOKEN}
+          --kubernetes-namespace=${var.common.k8s-namespace}
+          --chart-archive=.bob/${common.helm-chart-name}-internal/${var.common.helm-chart-file-name}
+          --helm-repo=${release.helm-chart-released-repo}
+          --docker-server=${common.image-registry}
+          --docker-username=${env.common.DOCKER_USERNAME}
+          --docker-password=${env.common.DOCKER_PASSWORD}
+          --secret-name=${common.image-pullsecret}
+          --helm_variables="${var.common.additional-chart-values}"
+          --helm_value_file="${var.common.additional-chart-values-file}"
+          --baseline_chart_version="$(<.bob/var.gas-latest-plus-version)"
+          --helm-timeout=600
+          --skip-cleanup
+          --ignore-cleanup
+
+  upgrade-from-baseline-to-drop-and-measure-lead-time:
+    - task: save-baseline-upgrade-start-time
+      cmd:
+        - date "+%s" > .bob/var.baseline-upgrade-start-time
+    - rule: upgrade-from-baseline-to-drop
+    - task: save-baseline-upgrade-finish-time
+      cmd:
+        - date "+%s" > .bob/var.baseline-upgrade-finish-time
+
+  upgrade-from-latest-plus-to-drop:
+    - task: get-latest-plus-version
+      docker-image: common.k8-test
+      cmd: bash -c '
+        curl -L -H "X-JFrog-Art-Api:${env.common.API_TOKEN}" ${helm-release-artifactory} -o .bob/var.gas-all-releases;
+        sed -i "s/[a-zA-Z]\+//g;s/< =*.*-----//g;s/<.*$//g;s/.*>.*$//g;s/[.][0-9]*$//g;s/[.] *$//g;/^$/d" .bob/var.gas-all-releases;
+        sort -V -u -b -r -o .bob/var.gas-all-releases .bob/var.gas-all-releases;
+        cut -d" " -f1 .bob/var.gas-all-releases | sed -n 1p > .bob/var.gas-latest-plus-version;'
+    - task: save-lplus-upgrade-start-time
+      cmd:
+        - date "+%s" > .bob/var.lplus-upgrade-start-time
+    - rule: install-latest-plus-and-upgrade-to-drop
+    - task: save-lplus-upgrade-finish-time
+      cmd:
+        - date "+%s" > .bob/var.lplus-upgrade-finish-time
+
+  rollback-to-baseline:
+    - task: save-rollback-start-time
+      cmd:
+        - date "+%s" > .bob/var.rollback-start-time
+    - task: rollback
+      docker-image: common.k8-test
+      docker-flags:
+        - "--network=host"
+        - "--env KUBECONFIG=${env.common.KUBECONFIG}"
+        - "--volume ${env.common.KUBECONFIG}:${env.common.KUBECONFIG}:ro"
+        - "--volume ${env.common.PWD}:${env.common.PWD}"
+      cmd:
+        - helm rollback ${helm-release-name-with-suffix} --namespace=${var.common.k8s-namespace}
+    - task: save-rollback-finish-time
+      cmd:
+        - date "+%s" > .bob/var.rollback-finish-time
+
+  scale-out:
+    - task: save-scale-out-start-time
+      cmd:
+        - date "+%s" > .bob/var.scale-out-start-time
+    - task: system-scale-out
+      docker-image: common.k8-test
+      docker-flags:
+        - "--network=host"
+        - "--env KUBECONFIG=${env.common.KUBECONFIG}"
+        - "--volume ${env.common.KUBECONFIG}:${env.common.KUBECONFIG}:ro"
+        - "--volume ${env.common.PWD}:${env.common.PWD}"
+      cmd: >
+        /bin/bash -c '
+        kubectl scale deployment ${common.helm-chart-name} -n ${var.common.k8s-namespace} --replicas=${scale-out};
+        kubectl rollout status --watch --timeout=1800s -n ${var.common.k8s-namespace} deployment ${common.helm-chart-name} || exit 1;
+        '
+    - task: save-scale-out-finish-time
+      cmd:
+        - date "+%s" > .bob/var.scale-out-finish-time
+
+  scale-in:
+    - task: save-scale-in-start-time
+      cmd:
+        - date "+%s" > .bob/var.scale-in-start-time
+    - task: system-scale-in
+      docker-image: common.k8-test
+      docker-flags:
+        - "--network=host"
+        - "--env KUBECONFIG=${env.common.KUBECONFIG}"
+        - "--volume ${env.common.KUBECONFIG}:${env.common.KUBECONFIG}:ro"
+        - "--volume ${env.common.PWD}:${env.common.PWD}"
+      cmd: >
+        /bin/bash -c '
+        kubectl scale deployment ${common.helm-chart-name} -n ${var.common.k8s-namespace} --replicas=${scale-in};
+        kubectl rollout status --watch --timeout=1800s -n ${var.common.k8s-namespace} deployment ${common.helm-chart-name} || exit 1;
+        '
+    - task: save-scale-in-finish-time
+      cmd:
+        - date "+%s" > .bob/var.scale-in-finish-time
+
+  k8s-test-drop:
+    - task: convert-iccr-path # contour rewrite does not support - so need to replace with _ in the path string
+      cmd: echo "${var.common.k8s-namespace}" | sed -r 's/-/_/g' > .bob/var.ingress-iccr-path
+    - rule: common.generate-dummy-service-all
+    - rule: services-ip-pool-test
+    - rule: install-ci-and-mocks
+    - rule: set-chart-values-drop # this fetches the newly installed ICCR's IP address
+    - rule: common.install-gas
+    - rule: enable-mocks
+    - task: system-scale-down
+      docker-image: common.k8-test
+      docker-flags:
+        - "--network=host"
+        - "--env KUBECONFIG=${env.common.KUBECONFIG}"
+        - "--volume ${env.common.KUBECONFIG}:${env.common.KUBECONFIG}:ro"
+        - "--volume ${env.common.PWD}:${env.common.PWD}"
+      cmd: >
+        /bin/bash -c '
+        kubectl scale deployment ${common.helm-chart-name} -n ${var.common.k8s-namespace} --replicas=${scale-in};
+        kubectl rollout status --watch --timeout=1800s -n ${var.common.k8s-namespace} deployment ${common.helm-chart-name} || exit 1;
+        '
+    - rule: integration-tests-in-cluster-backend
+    - rule: integration-tests-in-cluster-frontend
+    - rule: common.namespace-cleanup
+
+  services-ip-pool-test:
+    - task: ip-test
+      docker-image: common.k8-test
+      docker-flags:
+        - "--network=host"
+        - "--env KUBECONFIG=${env.common.KUBECONFIG}"
+        - "--volume ${env.common.KUBECONFIG}:${env.common.KUBECONFIG}:ro"
+        - "--volume ${env.common.PWD}:${env.common.PWD}"
+      cmd: ci/scripts/cluster-ip-checker.sh
+
+  install-ci-and-mocks:
+    - rule: common.generate-ci-chart
+    - rule: common.k8-cluster-prepare
+    - task: install-dependencies-chart
+      docker-image: common.k8-test
+      docker-flags:
+        - "--network=host"
+        - "--env KUBECONFIG=${env.common.KUBECONFIG}"
+        - "--volume ${env.common.KUBECONFIG}:${env.common.KUBECONFIG}:ro"
+        - "--volume ${env.common.PWD}:${env.common.PWD}"
+      cmd: "helm upgrade --install adp-gas-dependencies .bob/ci-0.0.0.tgz \
+        --namespace ${var.common.k8s-namespace} \
+        --wait \
+        --timeout 10m0s \
+        --values ${functions.mocks-config-yaml} \
+        --values ${var.common.additional-dependencies-chart-values-file} \
+        --set global.pullSecret=${common.image-pullsecret} \
+        --set demo-ui-service-ecm.ingress.path=/domainapp-ecm-${var.common.k8s-namespace} \
+        --set demo-ui-service-eea.ingress.path=/domainapp-eea-${var.common.ingress-iccr-path} \
+        --set demo-ui-service-enm.ingress.path=/domainapp-enm-${var.common.k8s-namespace} \
+        ${var.common.additional-dependencies-chart-values} ${var.common.additional-dependencies-chart-values-ha}"
+
+  set-chart-values-drop:
+    - task: functions.test:get-ip-from-k8s
+    - task: set-ingress-protocol
+      cmd: echo "https" > .bob/var.ingress-protocol
+    - task: set-additional-values
+      cmd: echo "global.pullSecret=${common.image-pullsecret},ingress.hostname=${var.common.ingress-hostname},ingress.path=/${var.common.k8s-namespace}" > .bob/var.additional-chart-values
+    - task: set-additional-values-file
+      cmd: echo "${common.drop-chart-values}" > .bob/var.additional-chart-values-file
+
+  enable-mocks:
+    - task: upgrade
+      docker-image: common.k8-test
+      docker-flags:
+        - "--network=host"
+        - "--env KUBECONFIG=${env.common.KUBECONFIG}"
+        - "--volume ${env.common.KUBECONFIG}:${env.common.KUBECONFIG}:ro"
+        - "--volume ${env.common.PWD}:${env.common.PWD}"
+      cmd: "helm upgrade adp-gas-dependencies .bob/ci-0.0.0.tgz \
+        --namespace ${var.common.k8s-namespace} \
+        --wait \
+        --timeout 10m0s \
+        --reuse-values \
+        --values ${common.mocks-enable-yaml} \
+        --set demo-ui-service-eea.ingress.hostname=${var.common.ingress-hostname} \
+        --set demo-ui-service-ecm.uid=${env.common.DOCKER_USERNAME} \
+        --set demo-ui-service-eea.uid=${env.common.DOCKER_USERNAME} \
+        --set demo-ui-service-enm.uid=${env.common.DOCKER_USERNAME} \
+        --set demo-ui-service-ecm.ingress.iccrIP=${var.mock-service-iccr-value} \
+        --set demo-ui-service-eea.ingress.iccrIP=${var.mock-service-iccr-value} \
+        --set demo-ui-service-enm.ingress.iccrIP=${var.mock-service-iccr-value}"
+
+  wait-for-domain-apps-to-be-discovered:
+    - task: wait-for-domain-apps-to-be-discovered
+      docker-image: common.nodejs-builder
+      cmd: >
+        node ci/scripts/service-checker.js ${var.common.ingress-hostname} ${var.common.ingress-iccr-path} ${var.common.ingress-protocol} \
+        demo-ui-service-ecm \
+        demo-ui-service-eea \
+        demo-ui-service-enm \
+        demo-ui-service-esma \
+        demo-ui-service-esmb \
+        demo-ui-service-esmc \
+        demo-ui-service-eui1 \
+        demo-ui-service-eui2 \
+        demo-ui-service-3pp
+
+  integration-tests-in-cluster-backend:
+    - rule: wait-for-domain-apps-to-be-discovered
+    - task: start-kubernetes-backend-integration-tests
+      docker-image: common.nodejs-builder
+      docker-flags:
+        - "--env KUBERNETES_MASTER_NODE=${var.common.ingress-hostname}"
+        - "--env SERVICE_PATH=/${var.common.ingress-iccr-path}"
+      cmd:
+        - npm run test:backend:integration
+
+  integration-tests-in-cluster-frontend:
+    - task: start-kubernetes-frontend-integration-tests
+      cmd: "export KUBERNETES_MASTER_NODE=${var.common.ingress-hostname} && \
+        export SERVICE_PATH=/${var.common.ingress-iccr-path} && \
+        docker-compose
+        --file integration-tests/docker/selenium-docker-compose.yml
+        up
+        --abort-on-container-exit
+        --exit-code-from tester"
+    - task: functions.test:remove-containers
+      properties:
+        - docker-compose-path: integration-tests/docker/selenium-docker-compose.yml
+
+  download-gas-drop-chart:
+    - task: prepare-drop-image-folder
+      docker-image: common.adp-release-auto
+      cmd: mkdir -p .bob/${common.helm-chart-name}-internal
+    - task: pull-latest-gas-drop-chart
+      docker-image: common.k8-test
+      cmd: bash -c '
+        if [[ "${env.GAS_VERSION}" == *"+"* ]]; then
+        helm pull ${common.helm-chart-name}
+        --version "${env.GAS_VERSION}"
+        --repo ${release.helm-chart-released-repo}
+        --username ${env.common.HELM_USER}
+        --password ${env.common.API_TOKEN}
+        --destination .bob/${common.helm-chart-name}-internal;
+        else
+        helm pull ${common.helm-chart-name}
+        --version "${env.GAS_VERSION}"
+        --repo ${common.helm-chart-drop-repo}
+        --username ${env.common.HELM_USER}
+        --password ${env.common.API_TOKEN}
+        --destination .bob/${common.helm-chart-name}-internal;
+        fi'
+    - task: update-helm-chart-file-name
+      cmd: ls .bob/${common.helm-chart-name}-internal > .bob/var.helm-chart-file-name
+
+  download-gas-baseline-chart:
+    - task: prepare-drop-image-folder
+      docker-image: common.adp-release-auto
+      cmd: mkdir -p .bob/${common.helm-chart-name}-internal-baseline
+    - task: pull-latest-gas-drop-chart
+      docker-image: common.k8-test
+      cmd: bash -c '
+        helm pull ${common.helm-chart-name}
+        --version "${baseline-version}"
+        --repo ${common.helm-chart-drop-repo}
+        --username ${env.common.HELM_USER}
+        --password ${env.common.API_TOKEN}
+        --destination .bob/${common.helm-chart-name}-internal-baseline'
+    - task: update-helm-chart-file-name-baseline
+      cmd: ls .bob/${common.helm-chart-name}-internal-baseline > .bob/var.helm-chart-file-name-baseline
+
+  find-out-the-version:
+    - task: find-out-the-version
+      cmd: ls .bob/${common.helm-chart-name}-internal | grep -oP '(\d+\.?){3}-\d+' > .bob/var.version
+
+  set-drop-version-to-version:
+    - task: set-drop-version-to-version
+      cmd: /bin/bash -c '
+        if [ "${env.GAS_VERSION}" = ">0.0.0-0" ]; then
+        echo -n $(ls .bob/${common.helm-chart-name}-internal) | grep -oP "(\d+\.?){3}-\d+" | tr -d "\n" > .bob/var.version;
+        else
+        echo -n "${env.GAS_VERSION}" | sed "s/+/-/;s/>/~/" > .bob/var.version;
+        fi'
+
+  create-test-report:
+    - rule: common.get-versions
+    - task: fetch-versions
+      docker-image: common.k8-test
+      docker-flags:
+        - "--network=host"
+        - "--env KUBECONFIG=${env.common.KUBECONFIG}"
+        - "--volume ${env.common.KUBECONFIG}:${env.common.KUBECONFIG}:ro"
+        - "--volume ${env.common.PWD}:${env.common.PWD}"
+      cmd:
+        - kubectl get service eric-sec-key-management -n ${var.common.k8s-namespace} -o jsonpath='{.metadata.annotations.ericsson\.com\/product-revision}' >> .bob/var.eric-sec-key-management-version
+        - kubectl get service eric-sec-sip-tls -n ${var.common.k8s-namespace} -o jsonpath='{.metadata.annotations.ericsson\.com\/product-revision}' >> .bob/var.eric-sec-sip-tls-version
+        - kubectl get service eric-data-distributed-coordinator-ed -n ${var.common.k8s-namespace} -o jsonpath='{.metadata.annotations.ericsson\.com\/product-revision}' >> .bob/var.eric-data-distributed-coordinator-ed-version
+    - task: pull-image
+      cmd: docker pull ${var.common.image-full-name-internal}:${var.version}
+    - task: save-image-size
+      cmd: docker image inspect ${var.common.image-full-name-internal}:${var.version} -f '{{.Size}}' | numfmt --to=si > .bob/var.docker-image-size
+    - task: common.functions.report-generation:fill-ejs-template
+      properties:
+        - report-template-file: docs/release/content/k8s-test-report-template.ejs.md
+        - template-variables: secKeyManagement=${var.eric-sec-key-management-version} secSipTls=${var.eric-sec-sip-tls-version} distributedCoordinator=${var.eric-data-distributed-coordinator-ed-version} kubernetesVersion=${var.common.kubernetes-version} helmVersion=${var.common.helm-version} dockerImageName=${var.common.image-full-name-internal} dockerImageTag=${var.version} dockerImageSize=${var.common.docker-image-size} installStartTime=${var.common.install-start-time} installFinishTime=${var.common.install-finish-time} rolloutRestartStartTime=${var.rollout-restart-start-time} rolloutRestartFinishTime=${var.rollout-restart-finish-time} baselineUpgradeStartTime=${var.baseline-upgrade-start-time} baselineUpgradeFinishTime=${var.baseline-upgrade-finish-time} upgradeLatestPlusStartTime=${var.lplus-upgrade-start-time} upgradeLatestPlusFinishTime=${var.lplus-upgrade-finish-time} rollbackStartTime=${var.rollback-start-time} rollbackFinishTime=${var.rollback-finish-time} scaleOutStartTime=${var.scale-out-start-time} scaleOutFinishTime=${var.scale-out-finish-time} scaleInStartTime=${var.scale-in-start-time} scaleInFinishTime=${var.scale-in-finish-time} lossOfService=${var.loss-of-service}
+        - report-output-path: ${report-generation-output}
+        - report-name: ${report-name}
+    - task: common.functions.report-generation:echo-messages
+      properties:
+        - report-output-path: ${report-generation-output}
+        - report-name: ${report-name}
+    - task: common.functions.report-generation:convert-to-pdf
+      properties:
+        - report-output-path: ${report-generation-output}
+    - rule: find-out-the-version
+    - task: archive-reports
+      docker-image: common.adp-release-auto
+      cmd:
+        - cp ./build/doc-archive/k8s-test-report/pdf/k8s-test-report/k8s-test-report.pdf ./build/doc-archive/k8s-test-report/final
+        - >
+          bash -c '
+          cd build/doc-archive/k8s-test-report/final;
+          zip -q -r ./../../../k8s-test-report-${var.common.version}.zip .;
+          zip -q -r ./../../../k8s-test-report.zip .;
+          '
+
+  publish-test-report:
+    - rule: find-out-the-version
+    - task: common.functions.release:upload-file # upload-zip-documents-to-artifactory
+      properties:
+        - file-to-upload: ./build/k8s-test-report-${var.common.version}.zip
+        - repo-for-upload: ${common.helm-chart-repo-server}/${common.doc-arm-dev-path}/drop-documents/
+        - upload-api-token: ${env.common.API_TOKEN}
+    - task: eridoc-upload
+      docker-image: common.adp-release-auto
+      docker-flags:
+        - --env ERIDOC_USERNAME="${env.common.ERIDOC_USERNAME}"
+        - --env ERIDOC_PASSWORD="${env.common.ERIDOC_PASSWORD}"
+      cmd:
+        - eridoc upload --config ./docs/release/config/eridoc/release-k8s-report.yaml --debug --no-validate-certificates --set semver=${var.common.semver}
+
+  k6-get-api-test:
+    - task: simple-k6-get-api-test
+      docker-image: k6Image
+      docker-flags:
+        - "--env GAS_URL=https://${var.common.ingress-hostname}/${var.common.ingress-iccr-path}"
+        - "--user=0"
+        - "--volume ${env.common.PWD}/load-test/report:/report"
+      cmd: run --out json=.bob/test_get_api_results.json ./load-test/k6tests/k6-get-api-test.js
+    - task: parse-simple-getapi-test
+      docker-image: common.ci-toolbox
+      cmd:
+        - cat ${k6-get-api-test-path} | jq -r '. | .metrics.checks.values.fails' > .bob/var.loss-of-service

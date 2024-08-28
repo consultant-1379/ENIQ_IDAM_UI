@@ -1,0 +1,47 @@
+model_version: 2.0
+product_va_config:
+  name: GUI Aggregator Lightweight
+  product_name: eric-adp-gui-aggregator-service
+  version: "{VERSION}"
+  va_template_version: 2.0.0
+  description: The Lightweight GUI Aggregator service (GAS Light) contains the Launcher (aka Portal) web client (EUISDK) and the UI Service backend (node.js).
+  mitigations:
+    CVE-2017-18589:
+      mitigation:
+        "Bug in scanning tool. Vulnerability mentioned is associated with the cookie-rs Rust library: https://github.com/anchore/anchore-engine/issues/606.
+        This application is a javascript project using nodejs, Rust isn't used at all in the codebase.
+        There is a package with similar name in the dependencies: cookie 0.5.0, but it is not related to the vulnerable Rust package."
+      sce:
+        sce-id: SCED-2023-000179
+        status: Approved
+        expires: 2023-06-30
+    CVE-2021-41720:
+      mitigation: "CVE has been withdrawn and has been concluded that it is not a vulnerability."
+      sce:
+        sce-id: SCE-2022-2273
+        status: Approved
+        expires: 2022-12-15
+    XRAY-N51:
+      mitigation:
+        "False Positive finding by the X-ray tool. GAS Light uses the patched 1.18.1 version of the lib in question.
+        See GitHub issue: https://github.com/advisories/GHSA-6x33-pw7p-hmpq"
+      sce:
+        sce-id: SCE-2022-2273
+        status: Approved
+        expires: 2022-12-15
+    CVE-2022-48303:
+      mitigation: "The vulnerability is present in the CBOS layer. It will be mitigated in future CBOS releases."
+      sce:
+        sce-id: ""
+        status: ""
+        expires: ""
+    CVE-2023-0687:
+      mitigation: "The vulnerability is present in the CBOS layer. It will be mitigated in future CBOS releases."
+      sce:
+        sce-id: ""
+        status: ""
+        expires: ""
+
+    open_ports:
+      3000/tcp:
+        intended: true

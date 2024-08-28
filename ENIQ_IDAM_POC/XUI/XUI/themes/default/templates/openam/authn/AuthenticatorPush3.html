@@ -1,0 +1,39 @@
+{{!
+  Copyright 2016-2020 ForgeRock AS. All Rights Reserved
+
+  Use of this code requires a commercial software license with ForgeRock AS.
+  or with one of its affiliates. All use shall be exclusively subject
+  to such license between the licensee and ForgeRock AS.
+}}
+<div class="container">
+    <div class="page-header">
+      {{#if reqs.header}}
+        <h1 class="text-center">{{reqs.header}}</h1>
+      {{/if}}
+      {{#if reqs.description}}
+        <p class="page-description text-center">{{reqs.description}}</p>
+      {{/if}}
+    </div>
+
+    <form action="" method="post" class="form login col-sm-6 col-sm-offset-3 text-center" data-stage="{{reqs.stage}}">
+        <fieldset class="row">
+            <div class="form-group"><span></span></div>
+            <div>
+                {{#each reqs.callbacks}}
+                {{#equals type "PollingWaitCallback"}}
+                {{callbackRender}}
+                {{/equals}}
+                {{/each}}
+            </div>
+            <div>{{t "templates.authn.AuthenicatorPush3.havingTrouble"}} <input
+                    id="button_0"
+                    name="callback_1"
+                    type="submit"
+                    role="button"
+                    index="0"
+                    value='{{t "templates.authn.AuthenicatorPush3.useRecoveryCode"}}'
+                    class="btn btn-link am-btn-link-no-padding">
+            </div>
+        </fieldset>
+    </form>
+</div>

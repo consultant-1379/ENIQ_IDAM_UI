@@ -1,0 +1,27 @@
+{
+  "schema-version": "1.0.0",
+  "documents": [
+    {
+      "name": "1/1553-APR201088/2",
+      "displayName": "GUI Aggregator Service User Guide",
+      "descriptionLong": "GUI Aggregator Service User Guide",
+      "descriptionShort": "GUI Aggregator Service User Guide",
+      "version": "VERSION",
+      "path": "service_user_guide.md",
+      "type": "document",
+      "format": "markdown",
+      "childNames": [],
+      "groupNames": ["generic_services"],
+      "tags": []
+    }
+  ],
+  "groups": [
+    {
+      "name": "generic_services",
+      "displayName": "Generic Services",
+      "descriptionShort": "Documentation for Generic Services",
+      "descriptionLong": "Documentation for Generic Services",
+      "type": "product"
+    }
+  ]
+}

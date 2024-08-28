@@ -1,0 +1,31 @@
+{{!
+Copyright 2015-2019 ForgeRock AS. All Rights Reserved
+
+Use of this code requires a commercial software license with ForgeRock AS.
+or with one of its affiliates. All use shall be exclusively subject
+to such license between the licensee and ForgeRock AS.
+}}
+<div class="container test_class">
+    <p>
+        {{#if theme.settings.footer.mailto}}
+        <a href="mailto:{{theme.settings.footer.mailto}}">{{theme.settings.footer.mailto}}</a>
+        {{/if}}
+        {{#if theme.settings.footer.phone}}
+            {{t "templates.user.DefaultBaseTemplate.orPhone"}} {{theme.settings.footer.phone}}.
+        {{/if}}
+        {{#if version}}
+            <br/>
+            {{version}}
+        {{/if}}
+
+        {{#if theme.settings.footer.copyright}}
+        <span>{{theme.settings.footer.copyright}}</span>
+        {{/if}}
+
+        <br/>
+        {{t "common.form.copyright"}}
+
+       <br/>
+       <b>@Ericsson AB 2013-2020 - All rights reserved.</b>
+    </p>
+</div>

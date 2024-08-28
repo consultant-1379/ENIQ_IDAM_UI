@@ -1,0 +1,18 @@
+{
+  "mode": "remote",
+  "kubecontext": "dev-presentation",
+  "dockerUser": "",
+  "dockerPassword": "",
+  "deployCiChart": false,
+  "deployIam": true,
+  "deployFm": false,
+  "deployPm": false,
+  "deployLogTransformer": false,
+  "deployServiceMesh": false,
+  "deployMockServices": true,
+  "deployEsmServices": false,
+  "deployMainService": true,
+  "deployCNOM": false,
+  "mTLS": true,
+  "helpAggregatorEnabled": false
+}

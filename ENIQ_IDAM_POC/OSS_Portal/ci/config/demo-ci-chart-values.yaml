@@ -1,0 +1,46 @@
+eric-oss-help-aggregator:
+  ingress:
+    enabled: true
+    useContour: true
+    hostname: localhost
+    ingressClass: EEA-Applications
+    adpIccrServiceName: eric-eea-ingress-ctrl-common
+  log:
+    streamingMethod: indirect
+  configuration:
+    faultIndications:
+      enabled: false
+    guiAggregator:
+      enabled: true
+  metrics:
+    enabled: false
+
+help-center-mock-eea:
+  publicPath: help-center-mock-eea
+  contextRoot: ui
+  ingress:
+    enabled: true
+    useContour: true
+    hostname: localhost
+    ingressClass: EEA-Applications
+    adpIccrServiceName: eric-eea-ingress-ctrl-common
+
+help-center-mock-eea-real-doc:
+  publicPath: eea-library-overview
+  contextRoot: overview
+  ingress:
+    enabled: true
+    useContour: true
+    hostname: localhost
+    ingressClass: EEA-Applications
+    adpIccrServiceName: eric-eea-ingress-ctrl-common
+
+help-center-mock-ecm:
+  publicPath: help-center-mock-ecm
+  contextRoot: some-path
+  ingress:
+    enabled: true
+    useContour: true
+    hostname: localhost
+    ingressClass: EEA-Applications
+    adpIccrServiceName: eric-eea-ingress-ctrl-common

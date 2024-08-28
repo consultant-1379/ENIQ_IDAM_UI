@@ -1,0 +1,14 @@
+{
+  "apps": [
+  ],
+  "groups": [
+    {
+      "displayName": "NetAn Spotfire",
+      "version": "1.0.0",
+      "name": "eea:spotfire",
+      "type": "product",
+      "descriptionLong": "NetAn Spotfire, for UI demo purposes only.",
+      "descriptionShort": "NAS"
+    }
+  ]
+}

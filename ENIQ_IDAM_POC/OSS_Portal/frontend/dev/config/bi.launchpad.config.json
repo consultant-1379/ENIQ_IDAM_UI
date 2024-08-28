@@ -1,0 +1,14 @@
+{
+  "apps": [
+  ],
+  "groups": [
+    {
+      "displayName": "BI LaunchPad",
+      "version": "1.0.0",
+      "name": "eea:launchpad",
+      "type": "product",
+      "descriptionLong": "BI LaunchPad, for UI demo purposes only.",
+      "descriptionShort": "BLP"
+    }
+  ]
+}

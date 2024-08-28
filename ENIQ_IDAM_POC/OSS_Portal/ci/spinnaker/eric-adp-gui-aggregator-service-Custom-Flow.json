@@ -1,0 +1,131 @@
+{
+  "digest": "4bc64402ba81a4e215b6261477c5929f6013d57547e954b81721a25200fde9cd",
+  "id": "0904774a-7598-4f6c-a23c-2f9809784bd9",
+  "lastModifiedBy": "zopaval",
+  "metadata": {
+    "description": "A pipeline template derived from pipeline \"eric-adp-gui-aggregator-service-Custom-Flow\" in application \"adp-smart-insights\"",
+    "name": "eric-adp-gui-aggregator-service-Custom-Flow",
+    "owner": "gabor.klinda@ericsson.com",
+    "scopes": [
+      "global"
+    ]
+  },
+  "pipeline": {
+    "keepWaitingPipelines": false,
+    "lastModifiedBy": "zopaval",
+    "limitConcurrent": true,
+    "notifications": [
+      {
+        "address": "PDLSCRUMNW@pdl.internal.ericsson.com",
+        "cc": "052b0392.ericsson.onmicrosoft.com@emea.teams.ms",
+        "level": "pipeline",
+        "message": {
+          "pipeline.failed": {
+            "text": "Dear ${trigger.properties['COMMITTER_NAME']},"
+          }
+        },
+        "type": "email",
+        "when": [
+          "pipeline.failed"
+        ]
+      },
+      {
+        "address": "f98b007c.ericsson.onmicrosoft.com@emea.teams.ms",
+        "level": "pipeline",
+        "message": {
+          "pipeline.complete": {
+            "text": "Dear ${trigger.properties['COMMITTER_NAME']},"
+          },
+          "pipeline.failed": {
+            "text": "Dear ${trigger.properties['COMMITTER_NAME']},"
+          },
+          "pipeline.starting": {
+            "text": "Dear ${trigger.properties['COMMITTER_NAME']},"
+          }
+        },
+        "type": "email",
+        "when": [
+          "pipeline.starting",
+          "pipeline.complete",
+          "pipeline.failed"
+        ]
+      }
+    ],
+    "schema": "1",
+    "spelEvaluator": "v4",
+    "stages": [
+      {
+        "completeOtherBranchesThenFail": true,
+        "continuePipeline": false,
+        "failPipeline": false,
+        "job": "adp-ui-service-vuln",
+        "master": "eea-aispinn-seliius27190",
+        "name": "GAS Light Vulnerability Analysis",
+        "parameters": {
+          "GERRIT_REFSPEC": "",
+          "HELM_VERSION": "${trigger.properties['CHART_VERSION']}",
+          "MANAGE_JIRA": true,
+          "UPLOAD_ARM": true,
+          "UPLOAD_ERIDOC": true,
+          "UPLOAD_VHUB": true
+        },
+        "propertyFile": "",
+        "refId": "1",
+        "requisiteStageRefIds": [],
+        "type": "jenkins"
+      },
+      {
+        "completeOtherBranchesThenFail": true,
+        "continuePipeline": false,
+        "failPipeline": false,
+        "job": "adp-ui-service-characteristics-verification",
+        "master": "eea-aispinn-seliius27190",
+        "name": "GAS Light Characteristics Verification",
+        "parameters": {
+          "GAS_VERSION": "${trigger.properties['CHART_VERSION']}",
+          "PUBLISH_PERFORMANCE_REPORT": true
+        },
+        "refId": "2",
+        "requisiteStageRefIds": [],
+        "type": "jenkins"
+      },
+      {
+        "completeOtherBranchesThenFail": true,
+        "continuePipeline": false,
+        "failPipeline": false,
+        "job": "adp-ui-service-deploy-upgrade-robustness-loop",
+        "master": "eea-aispinn-seliius27190",
+        "name": "GAS Light Upgrade Robustness",
+        "parameters": {
+          "GAS_VERSION": "${trigger.properties['CHART_VERSION']}",
+          "PUBLISH_REPORT": true
+        },
+        "refId": "3",
+        "requisiteStageRefIds": [],
+        "type": "jenkins"
+      }
+    ],
+    "triggers": [
+      {
+        "enabled": true,
+        "job": "adp-ui-service-drop",
+        "master": "eea-aispinn-seliius27190",
+        "propertyFile": "artifact.properties",
+        "type": "jenkins"
+      },
+      {
+        "enabled": true,
+        "job": "adp-ui-service-release",
+        "master": "eea-aispinn-seliius27190",
+        "propertyFile": "artifact.properties",
+        "type": "jenkins"
+      }
+    ],
+    "updateTs": "1673360630376"
+  },
+  "protect": false,
+  "schema": "v2",
+  "tag": "latest",
+  "updateTs": "1673368531338",
+  "variables": []
+}

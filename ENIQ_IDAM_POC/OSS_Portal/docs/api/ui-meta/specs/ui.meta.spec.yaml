@@ -1,0 +1,196 @@
+openapi: 3.0.1
+info:
+  title: User Interface Metadata API Documentation
+  description: |
+    ```
+      Ericsson   |   DocNo <DOC NUMBER>   |   Rev PA1   |   Interwork Description
+    ```
+    ## Introduction
+    This document describes the User Interface Metadata REST API identified in the ADP GUI FA.
+    ### Terms
+    - **UI Meta Interface**: The interface providing access to static content contributed by Micro-services. All static content paths are relative to this URI.
+    - **Client Container**: An SPA (Single Page Application) implementing the App Shell pattern e.g. E-UI SDK Container.
+    - **UI App**: A full screen user interface exposed by a Microservice that can execute in the Client Container e.g. E-UI SDK App.
+      - ***External UI App***: Any UIs that have a separate web page (outside the Client Container) or other alternative renderer e.g. Citrix.
+    - **UI Component**: A reusable, embeddable UI Web Component exposed by a Microservice e.g. E-UI SDK Shareable Components.
+
+    ### API Versions
+    #### 1.3.0-alpha
+    Adding the `options` attribute to `app` and `component` entities.
+    #### 1.2.0-alpha
+    Adding the `/services` endpoint.
+    #### 1.1.0-alpha
+    Adding `module` attribute to `app` and `component` entities.
+    #### 1.0.0-alpha
+    Initial version.
+  version: "1.3.0-alpha"
+servers:
+  - url: /ui-meta/v1
+    description: Base
+tags:
+  - name: IF.GUI.META.REST
+    description: Provides meta information of all the accessible UI apps of the authorized user.
+      This includes metadata of UI apps and components as well as navigation preferences.
+    x-displayName: UI Meta Interface
+paths:
+  /services/{name}:
+    put:
+      operationId: serviceChange
+      summary: Update metadata for services
+      description:
+        A request indicates to GAS that UI-meta configuration is changed for a domain gui micro-service.
+        GAS instances should re-fetch the configuration and refresh their internal state.
+      tags:
+        - IF.GUI.META.REST
+      parameters:
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+          description: The name of service where the UI-meta configuration is changed
+        - in: header
+          name: Via
+          description: GAS pod checks the Via header. If the request is not forwarded from
+            another peer gas instance, then the receiver instance will proxy the request to the other peers.
+          schema:
+            type: string
+      requestBody:
+        description: The data of the changed service
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "../schemas/ui.service.change.yaml"
+            examples:
+              changeNotification:
+                summary: An example change notification
+                value:
+                  name: eric-eea-spotfire-manager
+      responses:
+        200:
+          description: The notification is accepted
+  /apps:
+    get:
+      operationId: getApps
+      summary: Get all UI apps
+      description: Returns list of available UI apps.
+        The list will contains based on users access to an application and availability of an active license.
+      tags:
+        - IF.GUI.META.REST
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "../schemas/ui.schemas.yaml#/components/schemas/Apps"
+              examples:
+                UiTools:
+                  value:
+                    - name: "adp-oam-ui-tools"
+                      service: "adp-oam-ui-service"
+                      displayName: "Configuration Tools"
+                      descriptionLong: "ADP.OAM.UI.TOOLS.DESC.LONG"
+                      descriptionShort: "ADP.OAM.UI.TOOLS.DESC.SHORT"
+                      module: "@adp-oam/ui-tools"
+                      color: "blue"
+                      acronym: "AUT"
+                      version: "0.1.0"
+                      type: "euisdk"
+                      route: "oam-tools"
+                      priority: 1
+                      childNames: ["adp-oam-ui-tools-scheduler"]
+                      groupNames: ["adp-tools"]
+                      tags: ["tools"]
+                      specification: "./adp-oam-ui-tools/app.config.json"
+                    - id: 5956ab3d-2285-4cf8-82e3-38c40d902f1d
+                      name: "adp-oam-ui-tools-scheduler"
+                      displayName: "Scheduler"
+                      descriptionLong: "ADP.OAM.UI.TOOLS.SCH.DESC.LONG"
+                      descriptionShort: "ADP.OAM.UI.TOOLS.SCH.DESC.SHORT"
+                      module: "@adp-oam/ui-tools-scheduler"
+                      color: "#D2691E"
+                      acronym: "SCH"
+                      version: "0.1.0"
+                      type: "euisdk"
+                      route: "oam-tools/scheduler"
+                      priority: 1
+                      groupNames: ["adp-tools", "oam"]
+                      tags: ["tools"]
+                      specification: "./adp-oam-ui-tools-scheduler/app.config.json"
+                    - id: 33a1f160-017e-4390-9060-255a69c78e76
+                      name: "adp-market-place"
+                      displayName: "ADP Market Place"
+                      module: "@adp/marketplace"
+                      color: "#008B8B"
+                      acronym: "AMP"
+                      version: "1.0.0"
+                      type: "external"
+                      url: "https://adp.ericsson.se/marketplace"
+                      priority: 10
+                      groupNames: ["adp-tools"]
+                      tags: ["adp", "marketplace"]
+  /groups:
+    get:
+      operationId: getGroups
+      summary: Get all UI groups
+      description: Returns list of all available UI groups and related UI apps.
+        UI apps list be included based on users access to an application and availability of an active license
+      tags:
+        - IF.GUI.META.REST
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "../schemas/ui.schemas.yaml#/components/schemas/Groups"
+              examples:
+                Tools:
+                  value:
+                    - id: 7382eb95-b9cf-4d62-a276-f920cf130f31
+                      version: "1.0.0"
+                      name: "adp-tools"
+                      displayName: "Tools"
+                      descriptionLong: "Tools Application"
+                      descriptionShort: "Utlity applications helps to perform common activities."
+                      color: "green"
+                      acronym: "TL"
+                      type: "domain"
+                      priority: 10
+                      tags: ["tools"]
+                    - id: 205e66cb-e979-4ba5-9da6-dc09f3ad5fde
+                      version: "1.0.0"
+                      name: "oam"
+                      displayName: "OAM"
+                      descriptionShort: "Operation and Maintenance Application"
+                      color: "#8B008B"
+                      type: "domain"
+                      priority: 20
+  /components:
+    get:
+      operationId: getComponents
+      summary: Get all UI components
+      description: Returns list of all available shared UI components.
+      tags:
+        - IF.GUI.META.REST
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "../schemas/ui.schemas.yaml#/components/schemas/Components"
+              examples:
+                LatestEntities:
+                  value:
+                    - id: 0b1d3330-2056-40ba-a1e6-1487afa809fc
+                      name: "adp-latest-entities"
+                      version: "0.1.0"
+                      displayName: "Latest Entities"
+                      descriptionLong: "Overview of all the entities created during last 2 weeks."
+                      module: "@adp/latest-entities"
+                      type: "oden"
+                      priority: 10
+                      specification: "./config/component.config.json"

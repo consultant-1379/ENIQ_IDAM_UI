@@ -1,0 +1,35 @@
+/* style goes here */
+:host{
+  display: block;
+}
+:host(.active ){
+  opacity: inherit!important;
+  pointer-events: inherit!important;
+}
+
+.user-form{
+  display: flex;
+  /* align-items: center; */
+  gap: 1em;
+  margin-bottom: var(--space-large,16px);
+}
+.user-form label{flex-basis: 140px;}
+
+.apps_checkbox{
+  padding-top: 0.8em;
+  padding-bottom: 0.8em;
+  border: 2px solid #c8c8c8;
+}
+
+.user-form eui-tree{
+  width: 16em;
+}
+
+/* filter-form */
+.form-fields.filter-form{
+  margin-bottom: 1em;
+}
+.form-fields.filter-form label{
+  display: block;
+  margin-bottom: 0.4em;
+}

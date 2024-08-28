@@ -1,0 +1,6 @@
+#config for the document generator, to assemble and zip the standalone md files and configs
+documents:
+  - name: adp_gui_aggregator_service_user_guide
+    files:
+      - ../../content/service_user_guide.md
+      - ../../../../.bob/temp/help-content/help-package-metadata.json

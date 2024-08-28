@@ -1,0 +1,57 @@
+:host{
+  display: block;
+}
+
+h1 {
+  padding: 1em;
+}
+.services{
+  color: var(--text, #242424);
+}
+.container {
+  padding: 18px 16px;
+  background-color: var(--gray-14,#242424);
+  margin-bottom: 3px;
+}
+.services .title{
+  font-size: 16px;
+  font-weight: 500;
+}
+.services .services-list{
+  /* display: flex;
+  gap: 16px;
+  flex-wrap: wrap; */
+  margin: 24px 0px;
+  display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-gap: var(--space-base, 8px);
+    width: 100%;
+}
+.services-list .list-item{
+  /* width: 24%;
+  height: 100px;
+  flex-basis: 300px; */
+  /* display: flex;
+  background-color: var(--gray-240); */
+}
+.services-list eui-link{
+  --link-blue:transparent;
+  text-transform: capitalize;
+}
+.services-list eui-link eui-card{
+  --blue:var(--card-color-border, #878787);
+  height: 100px;
+}
+a:hover{
+  text-decoration: none;
+}
+.services-list .list-item a{
+  flex: 1;
+  font-size: var(--space-large, 16px);
+  text-transform: capitalize;
+  border: 2px solid #767676;
+  padding: 16px;
+  box-sizing: border-box;
+  text-decoration: none;
+  color: var(--text, #242424);
+}
